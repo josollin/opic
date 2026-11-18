@@ -162,7 +162,7 @@ audio{width:100%;margin:6px 0}
    설정 — index.html과 같은 SCRIPT_URL을 넣어 주세요
    ========================================================= */
 const CONFIG = {
-  SCRIPT_URL: "https://script.google.com/macros/s/AKfycby46OHJQPPoWvWvcwVxbbXfjzdZ7yDFEPk5Z7__4_XBL0aXrrhFeST_hqrkYPo9ET8pkA/exec",
+  SCRIPT_URL: "",
   DEFAULT_SIGN: "원더스피크",   // 성적표 맨 아래 서명 기본값
   LOGO_URL: "logo.png"          // 성적표 하단 로고. teacher.html과 같은 폴더에 logo.png를 올려 주세요 (없으면 글자로 표시)
 };
@@ -263,6 +263,7 @@ async function openSubmission(id){
       id, data:d, files:j.files, sheet:sh, dirty:false,
       grade: t.grade || sh.tgrade || (fb&&fb.estimated_grade) || "",
       scores: t.scores || (sh.scores||[]).map(x=>x?Number(x):0),
+      autoFlu: false,
       memo: t.memo ?? sh.memo ?? "",
       sign: store.get("opic_sign", CONFIG.DEFAULT_SIGN),
       lists: t.lists || listsFromFeedback(fb),
@@ -270,8 +271,17 @@ async function openSubmission(id){
       message: sh.message || "",
       sent: !!sh.sent
     };
+    // 채점이 비어 있으면 유창성은 자동 지표로 먼저 채워 둬요 (선생님이 바꿀 수 있어요)
+    if(!CUR.scores.some(Boolean)){ const f = suggestFluency(d.meta?.fluency); if(f){ CUR.scores[2] = f; CUR.autoFlu = true; } }
     renderDetail(); renderList();
   }catch(e){ $("#detail").innerHTML = `<div class="empty">불러오지 못했어요: ${esc(e.message)}</div>`; }
+}
+function suggestFluency(fl){
+  if(!fl || fl.wpm==null) return 0;
+  let s = fl.wpm<60?1 : fl.wpm<80?2 : fl.wpm<100?3 : fl.wpm<130?4 : 5;
+  if(fl.perMin!=null && fl.perMin>3) s--;
+  if(fl.silencePct!=null && fl.silencePct>40) s--;
+  return Math.max(1, Math.min(5, s));
 }
 function listsFromFeedback(fb){
   fb = fb || {};
@@ -312,7 +322,9 @@ function renderDetail(){
       <div class="grade-box">
         <small>AI 예상 등급 (학생에게 이미 보인 등급)</small>
         <div class="g">${esc(fb?.estimated_grade||"-")}</div>
-        <p style="font-size:13px;color:#dbe4f0;line-height:1.6;margin:6px 0 0">${esc(fb?.grade_reason||"AI 분석이 없어요. 받아쓰기를 확인하고 아래에서 다시 분석할 수 있어요.")}</p>
+        <p style="font-size:13px;color:#dbe4f0;line-height:1.6;margin:6px 0 0">${esc(fb?.grade_reason||"AI 분석이 없어요. 받아쓰기를 확인하고 ④의 [AI 다시 분석]을 눌러 주세요.")}</p>
+        ${!fb && m.aiError?`<p style="font-size:12px;color:#ffb4b4;margin:8px 0 0">실패 이유: ${esc(m.aiError)}</p>`:""}
+        ${fb?.partial_error?`<p style="font-size:12px;color:#ffd6a8;margin:8px 0 0">${esc(fb.partial_error)} [AI 다시 분석]으로 다시 받을 수 있어요.</p>`:""}
       </div>
       <div>
         <h3 style="margin-top:0">선생님 판정 등급 <span class="muted">(카톡에 이 등급이 들어가요)</span></h3>
@@ -321,7 +333,7 @@ function renderDetail(){
         <textarea id="memo" rows="4" placeholder="예) 롤플레이에서 질문을 자연스럽게 이어 가는 게 정말 좋아졌어요! 다음엔 과거 경험 이야기를 끝까지 과거형으로 말하는 데만 집중해 봐요.">${esc(C.memo)}</textarea>
       </div>
     </div>
-    <h3>말하기 채점 (1~5)</h3>
+    <h3>말하기 채점 (1~5) <span class="muted">— 발음·억양·자신감은 AI가 들을 수 없어 선생님이 들어 보고 매겨요${C.autoFlu?" · <b style='color:var(--blue)'>유창성은 말 속도·멈춤으로 자동 제안된 점수예요</b>":""}</span></h3>
     ${RUBRIC.map((r,i)=>`<div class="rub"><div><div class="nm">${r[0]}</div></div>
       <div><div class="scores">${[1,2,3,4,5].map(s=>`<button data-sc="${i}" data-v="${s}" class="${C.scores[i]===s?"on":""}">${s}</button>`).join("")}</div>
       <div class="hint">${r[1]} — ${r[2]}</div></div></div>`).join("")}
@@ -414,7 +426,7 @@ function bindDetail(){
   $("#memo").oninput = e => { C.memo = e.target.value; dirty(); };
   $("#sign").oninput = e => { C.sign = e.target.value; store.set("opic_sign", C.sign); };
   root.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{
-    const i=+b.dataset.sc, v=+b.dataset.v; C.scores[i] = C.scores[i]===v?0:v;
+    const i=+b.dataset.sc, v=+b.dataset.v; C.scores[i] = C.scores[i]===v?0:v; if(i===2) C.autoFlu = false;
     root.querySelectorAll(`[data-sc="${i}"]`).forEach(x=>x.classList.toggle("on", +x.dataset.v===C.scores[i])); dirty();
   });
   const target = (key,i) => (key==="tense"||key==="fluency") ? C.lists[key] : C.lists[key][i];

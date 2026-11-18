@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WonderSpeak OPIc 모의고사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --blue:#0c70f2; --blue-d:#0957bd; --blue-l:#e8f1fe; --orange:#ffae6a; --orange-l:#fff3e8;
+  --ink:#16202e; --sub:#5b6676; --line:#e3e8ef; --bg:#f5f7fb; --card:#fff; --red:#e5484d; --green:#1f9d63;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:15px}
+.wrap{max-width:880px;margin:0 auto;padding:24px 18px 80px}
+header.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header.top .in{max-width:880px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
+.logo{font-weight:800;letter-spacing:-.3px;font-size:17px}
+.logo b{color:var(--blue)} .logo span{color:var(--orange);font-weight:800}
+.top .spacer{flex:1}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;background:var(--blue-l);color:var(--blue);padding:6px 12px;border-radius:999px;font-size:14px;display:none}
+.timer.warn{background:#fdecec;color:var(--red)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;margin-bottom:18px}
+h1{font-size:28px;letter-spacing:-.6px;margin:0 0 8px}
+h2{font-size:21px;letter-spacing:-.4px;margin:0 0 6px}
+h3{font-size:16px;margin:18px 0 8px}
+p.lead{color:var(--sub);margin:0 0 20px;line-height:1.6}
+.muted{color:var(--sub);font-size:14px;line-height:1.6}
+.hero{background:linear-gradient(135deg,var(--blue) 0%,#3b8cf7 60%,#5aa0ff 100%);color:#fff;border:none;position:relative;overflow:hidden}
+.hero h1{font-size:32px}
+.hero p{color:#e6f0ff;line-height:1.65;margin:0}
+.hero .blob{position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:var(--orange);opacity:.9}
+.hero .blob2{position:absolute;right:90px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:#fff;opacity:.15}
+.hero .tag{display:inline-block;background:rgba(255,255,255,.18);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px;position:relative}
+.steps div{background:rgba(255,255,255,.14);border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.steps b{display:block;font-size:12px;opacity:.8;margin-bottom:3px}
+label.f{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+.inp{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;outline:none}
+.inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-l)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>*{flex:1;min-width:200px}
+.btn{border:none;border-radius:12px;padding:13px 22px;font-weight:700;font-size:15px;background:var(--blue);color:#fff;transition:.15s}
+.btn:hover{background:var(--blue-d)}
+.btn:disabled{background:#b8c4d4;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--bg)}
+.btn.orange{background:var(--orange);color:#3b2410}
+.btn.orange:hover{background:#ff9d4d}
+.btn.sm{padding:8px 14px;font-size:13px;border-radius:10px}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap}
+.chk{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 15px;font-size:14px;user-select:none;cursor:pointer;transition:.12s}
+.chip:hover{border-color:var(--blue)}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.survey-part{border-top:1px dashed var(--line);padding-top:6px;margin-top:14px}
+.survey-part:first-of-type{border-top:none}
+.counter{position:sticky;bottom:12px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-top:20px;font-size:14px}
+.counter b{color:var(--orange)}
+.counter .spacer{flex:1}
+.levels{display:grid;gap:10px}
+.lv{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;background:#fff;transition:.12s}
+.lv:hover{border-color:var(--blue)}
+.lv.on{border-color:var(--blue);background:var(--blue-l)}
+.lv .n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-weight:800;color:var(--blue)}
+.lv.on .n{background:var(--blue);color:#fff}
+.lv .t{font-size:14px;line-height:1.6;color:var(--ink)}
+.mic-test{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--bg);border-radius:14px;padding:16px;margin-top:10px}
+.meter{flex:1;min-width:140px;height:10px;background:#dfe5ee;border-radius:999px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),#7bd88f);transition:width .08s}
+.ok{color:var(--green);font-weight:700;font-size:14px}
+.err{color:var(--red);font-weight:600;font-size:14px}
+.notice{background:var(--orange-l);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.6;color:#6b3d14;margin-top:14px}
+.notice.blue{background:var(--blue-l);color:#0b3e86}
+
+/* exam */
+.progress{display:flex;gap:5px;margin:4px 0 18px}
+.progress i{flex:1;height:6px;border-radius:999px;background:#dfe5ee}
+.progress i.done{background:var(--blue)}
+.progress i.cur{background:var(--orange)}
+.exam{display:grid;grid-template-columns:240px 1fr;gap:22px;align-items:center}
+.avatar{background:linear-gradient(160deg,var(--blue-l),#fff);border-radius:18px;padding:18px;text-align:center;border:1px solid var(--line)}
+.avatar svg{width:100%;max-width:190px;height:auto}
+.avatar .nm{font-weight:700;margin-top:6px}
+.avatar .st{font-size:13px;color:var(--sub);margin-top:2px;min-height:18px}
+.speaking .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{from{transform:scaleY(.4)}to{transform:scaleY(1.2)}}
+.qbox .qn{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.qbox h2{font-size:24px}
+.big-play{width:92px;height:92px;border-radius:50%;border:none;background:var(--blue);color:#fff;display:grid;place-items:center;margin:18px 0;box-shadow:0 10px 24px rgba(12,112,242,.3)}
+.big-play:hover{background:var(--blue-d)}
+.big-play:disabled{background:#b8c4d4;box-shadow:none}
+.big-play svg{width:38px;height:38px}
+.rec-panel{background:#fff5f5;border:1px solid #f6cfd0;border-radius:14px;padding:16px;margin-top:14px;display:none}
+.rec-panel .top{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--red)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--red);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.rec-panel .el{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink)}
+.rec-panel .meter{margin-top:12px}
+.replay-bar{display:none;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.count{font-size:13px;color:var(--sub)}
+.qtext-peek{margin-top:12px;font-size:14px;color:var(--sub);display:none;background:var(--bg);padding:12px;border-radius:10px;line-height:1.6}
+
+/* results */
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.sum div{background:var(--bg);border-radius:12px;padding:12px}
+.sum b{display:block;font-size:12px;color:var(--sub);font-weight:600;margin-bottom:3px}
+.sum span{font-weight:800;font-size:17px}
+.grade-card{background:linear-gradient(135deg,var(--ink),#2b3a52);color:#fff;border:none}
+.grade{font-size:54px;font-weight:900;letter-spacing:-1px;color:var(--orange);line-height:1}
+.grade-card ul{margin:6px 0 0;padding-left:18px;line-height:1.7;color:#dbe4f0;font-size:14px}
+.grade-card h3{color:#fff}
+.fb-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ans{border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:12px;background:#fff}
+.ans .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--blue-l);color:var(--blue)}
+.badge.o{background:var(--orange-l);color:#a2541a}
+.ans .q{font-size:15px;line-height:1.6;margin:10px 0}
+.ans audio{width:100%;margin:6px 0}
+.ans textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;padding:10px;line-height:1.6;resize:vertical}
+.ans .fb{background:var(--blue-l);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.65;display:none}
+.corr{margin:6px 0 0;padding:0;list-style:none}
+.corr li{margin:6px 0}
+.corr del{color:var(--red)} .corr ins{color:var(--green);text-decoration:none;font-weight:700}
+.fls{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.fl{font-size:12.5px;padding:5px 10px;border-radius:999px;background:var(--bg);color:var(--sub)}
+.fl b{color:var(--ink);font-weight:700;margin-right:2px}
+.fl.good{background:#e6f6ee;color:#16774a}.fl.mid{background:#fff4e5;color:#9a5a12}.fl.bad{background:#fdecec;color:#b42328}
+.flu{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.flu>div{border-radius:14px;padding:14px;background:var(--bg)}
+.flu>div.good{background:#e6f6ee}.flu>div.mid{background:#fff4e5}.flu>div.bad{background:#fdecec}
+.flu small{display:block;font-size:12px;color:var(--sub);font-weight:600}
+.flu strong{display:block;font-size:24px;margin:4px 0 2px;letter-spacing:-.5px}
+.flu em{font-style:normal;font-size:12.5px;font-weight:700}
+.flu .good em{color:#16774a}.flu .mid em{color:#9a5a12}.flu .bad em{color:#b42328}
+@media(max-width:720px){.flu{grid-template-columns:1fr 1fr}}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,35,.55);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.modal{background:#fff;border-radius:18px;padding:24px;max-width:620px;width:100%;max-height:88vh;overflow:auto}
+.modal textarea{width:100%;height:260px;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px}
+.bar{height:10px;background:var(--bg);border-radius:999px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .2s}
+.hidden{display:none!important}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:720px){
+  .exam{grid-template-columns:1fr}
+  .avatar{display:flex;align-items:center;gap:12px;text-align:left;padding:12px}
+  .avatar svg{width:70px}
+  .steps,.sum{grid-template-columns:1fr 1fr}
+  .fb-grid{grid-template-columns:1fr}
+  .card{padding:20px}
+  h1,.hero h1{font-size:25px}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="logo"><b>Wonder</b>Speak <span>OPIc</span> 모의고사</div>
+  <div class="spacer"></div>
+  <div class="timer" id="timer">40:00</div>
+</div></header>
+
+<main class="wrap" id="app"></main>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script>
+/* =========================================================
+   설정 — 설치 가이드(README.md)를 보고 채워 주세요
+   ========================================================= */
+const CONFIG = {
+  // Google Apps Script 웹 앱 URL. 비워 두면 AI 피드백은 "프롬프트 복사" 방식, 제출은 ZIP 다운로드 방식으로 동작합니다.
+  SCRIPT_URL: "",
+  // Apps Script에 ACCESS_CODE를 설정했다면 true로 바꾸세요. 학생이 시작 화면에서 수강생 코드를 입력합니다.
+  ASK_CODE: false,
+  TOTAL_MINUTES: 40,
+  ACADEMY: "WonderSpeak",
+  // 시험이 끝난 뒤 학생에게 보여 줄 범위
+  //  "grade_only": AI 분석과 제출이 자동으로 진행되고, 학생은 예상 등급만 봐요. 상세 피드백은 선생님이 teacher.html에서 정리해 카톡으로 보내요.
+  //  "full": 학생이 녹음·받아쓰기·AI 피드백을 모두 직접 봐요. (SCRIPT_URL이 비어 있으면 자동으로 이 방식이 돼요)
+  STUDENT_VIEW: "grade_only"
+};
+
+/* =========================================================
+   문제 은행
+   d: 묘사 / r: 루틴·습관 / p: 과거 경험 / c: 비교·변화 / i: 이슈·의견
+   ========================================================= */
+const TOPICS = {
+  home:{kr:"집",d:"You indicated in the survey that you live in a house or an apartment. Please describe your home to me. What does it look like? How many rooms does it have, and which room do you like the most?",r:"What do you usually do at home on weekdays and on weekends? Tell me about a typical day at home from beginning to end.",p:"Have you made any changes to your home since you moved in, such as buying new furniture or redecorating? Tell me about the changes in as much detail as possible.",c:"Compare the home you lived in as a child with the home you live in now. What are the similarities and differences?",i:"Housing is a big issue in many countries. What problems do people in your country face when they look for a place to live? What do you think should be done about it?"},
+  neighborhood:{kr:"동네",d:"Please describe your neighborhood. What is it like, and what kinds of places and buildings are there?",r:"What do people usually do in your neighborhood? Where do you like to go in your neighborhood, and why?",p:"Tell me about a memorable experience you had in your neighborhood. What happened, who were you with, and why was it so memorable?",c:"How has your neighborhood changed over the years? Compare what it was like in the past with what it is like now.",i:"Many old neighborhoods are being redeveloped these days. What do people think about redevelopment, and what problems can it cause?"},
+  movies:{kr:"영화 보기",d:"You indicated in the survey that you like to go to the movies. What kinds of movies do you like to watch? Who is your favorite actor or actress, and why do you like them?",r:"Tell me about what you usually do when you go to the movies. Who do you go with? What do you do before and after the movie?",p:"Tell me about the most memorable movie you have seen recently. What was it about, and why was it so memorable?",c:"How have movies changed compared to when you were younger? Think about the kinds of movies, the theaters, and how people watch movies.",i:"These days many people watch movies on streaming services instead of going to theaters. What do you think about this trend? How does it affect the movie industry?"},
+  concert:{kr:"공연·콘서트 보기",d:"You indicated that you like to go to concerts or performances. What kinds of performances do you enjoy? Where do you usually go to see them?",r:"Tell me about what you typically do when you go to a concert. How do you get tickets, who do you go with, and what do you do afterwards?",p:"Tell me about the first concert or performance you ever went to. When was it, who did you go with, and how did you feel?",c:"Compare concerts in the past with concerts today. How have ticket prices, venues, or audiences changed?",i:"Ticket scalping is a big problem for popular concerts. Why does this happen, and what can be done to solve it?"},
+  park:{kr:"공원 가기",d:"You indicated that you like to go to the park. Please describe a park you often go to. What does it look like, and what can people do there?",r:"What do you usually do when you go to the park? Who do you go with, and how often do you go?",p:"Tell me about a memorable experience you had at a park. What happened, and why do you still remember it?",c:"How have parks in your country changed over the years? Compare parks in the past and parks today.",i:"Some people say cities need more green spaces. Why are parks important for people living in cities, and what problems do parks face these days?"},
+  beach:{kr:"해변·캠핑 가기",d:"You indicated that you like to go to the beach or go camping. Describe a beach or campsite you like. Where is it, and what is it like?",r:"What do you usually do when you go to the beach or go camping? What do you bring with you, and who do you go with?",p:"Tell me about a memorable trip to the beach or a camping trip. What happened from beginning to end?",c:"How has camping or going to the beach changed in your country compared to the past?",i:"Many beaches and campsites have problems with trash and pollution. What causes these problems, and how can we protect these places?"},
+  cafe:{kr:"카페 가기",d:"You indicated that you like to go to cafes. Describe your favorite cafe. Where is it, what does it look like, and why do you like it?",r:"What do you usually do at a cafe? When do you go, who do you go with, and what do you usually order?",p:"Tell me about a memorable experience you had at a cafe. What happened, and why was it special?",c:"Cafes have changed a lot in recent years. Compare cafes in the past with cafes today.",i:"There are too many cafes in some areas these days. Why do you think there are so many cafes, and what problems can this cause?"},
+  shopping:{kr:"쇼핑하기",d:"You indicated that you like to go shopping. Where do you like to go shopping? Describe the place in detail.",r:"Tell me about your shopping habits. What do you usually buy, how often do you shop, and who do you go with?",p:"Tell me about a memorable shopping experience. Maybe you found a great deal or had a problem with something you bought. What happened?",c:"How has shopping changed compared to when you were younger? Compare shopping in the past with shopping today.",i:"Online shopping has become very popular. What are the advantages and disadvantages of online shopping for consumers and for small businesses?"},
+  tv:{kr:"TV·리얼리티쇼 시청",d:"You indicated that you like to watch TV. What kinds of TV programs do you enjoy the most? Tell me about your favorite program.",r:"When and where do you usually watch TV? Who do you watch with, and what do you do while you watch?",p:"Tell me about a TV program that you remember well. When did you watch it, and why was it so memorable?",c:"How have TV programs changed over the years? Compare the programs people watched in the past with the programs they watch today.",i:"Some people worry that reality shows give a false picture of real life. What do you think about this? What effect do these shows have on viewers?"},
+  music:{kr:"음악 감상",d:"You indicated that you like to listen to music. What kinds of music do you like? Who are your favorite singers or musicians?",r:"When and where do you usually listen to music? How do you listen to it, and how does it make you feel?",p:"Tell me about how you first became interested in music. What kind of music did you listen to when you were young, and how has your taste changed?",c:"How has the way people listen to music changed over the years? Compare the past with today.",i:"Many musicians say streaming services don't pay them enough. What do you think about this issue? How does it affect the music industry?"},
+  cooking:{kr:"요리하기",d:"You indicated that you like to cook. What kinds of food do you like to cook? Tell me about a dish you are good at making.",r:"Tell me about your cooking routine. When do you cook, who do you cook for, and how do you prepare?",p:"Tell me about a time when you cooked something memorable. Maybe it went very well or very badly. What happened?",c:"How have people's eating and cooking habits changed compared to the past?",i:"Many people eat fast food or delivery food instead of cooking at home these days. Why is this happening, and what problems can it cause?"},
+  reading:{kr:"독서",d:"You indicated that you like to read. What kinds of books do you like to read? Who is your favorite author?",r:"When and where do you usually read? How often do you read, and how do you choose your books?",p:"Tell me about a book that left a strong impression on you. What was it about, and how did it affect you?",c:"How have people's reading habits changed compared to the past? Think about paper books, e-books, and audiobooks.",i:"Some people say that people don't read as much as they used to. Why do you think this is happening, and is it a problem?"},
+  jogging:{kr:"조깅",d:"You indicated that you go jogging. Where do you usually jog? Describe the place and tell me why you like jogging there.",r:"Tell me about your jogging routine. When do you jog, how long do you jog for, and what do you do before and after?",p:"Tell me about how you first started jogging. Was there a memorable moment or a problem you had while jogging?",c:"How has the way people exercise changed compared to the past?",i:"More and more people are interested in health and fitness. Why do you think this is, and what are some problems related to this trend?"},
+  walking:{kr:"걷기",d:"You indicated that you like to take walks. Where do you usually walk? Describe the place in detail.",r:"Tell me about your walking routine. When do you walk, who do you walk with, and what do you think about while walking?",p:"Tell me about a memorable walk you took. Where were you, and what happened?",c:"How have walking paths or walking habits in your country changed over the years?",i:"Many cities are trying to become more walkable. Why is this important, and what makes it difficult?"},
+  gym:{kr:"헬스",d:"You indicated that you go to the gym. Describe the gym you go to. What does it look like, and what equipment does it have?",r:"Tell me about your workout routine at the gym. What exercises do you do, and how often do you go?",p:"Tell me about how you started going to the gym. Has anything memorable or unexpected ever happened at the gym?",c:"Compare gyms in the past with gyms today. How have they changed?",i:"Some people spend a lot of money on fitness, such as personal training and supplements. What do you think about this? Is it worth it?"},
+  yoga:{kr:"요가",d:"You indicated that you do yoga. Where do you do yoga, and what is the place like?",r:"Tell me about a typical yoga session. What do you do from the beginning to the end?",p:"How did you first get into yoga? Tell me about your first yoga class and how you felt.",c:"How has yoga become more popular in your country compared to the past? What has changed?",i:"Many people suffer from stress these days. Why do people feel so much stress, and how can activities like yoga help?"},
+  cycling:{kr:"자전거",d:"You indicated that you like to ride a bike. Where do you usually ride, and what kind of bike do you have?",r:"Tell me about your biking routine. When do you ride, how far do you go, and who do you ride with?",p:"Tell me about a memorable experience you had while riding a bike. Did anything unexpected happen?",c:"How has cycling changed in your country? Compare the past with today, including bike paths and bike-sharing services.",i:"Bike accidents are increasing in many cities. What causes these accidents, and what can be done to make cycling safer?"},
+  swimming:{kr:"수영",d:"You indicated that you like to swim. Where do you usually swim? Describe the place in detail.",r:"Tell me about your swimming routine. When do you go, and what do you do before and after swimming?",p:"Tell me about how you learned to swim, or a memorable experience you had while swimming.",c:"How have swimming pools or swimming habits changed compared to the past?",i:"Water safety is an important issue every summer. Why do swimming accidents happen, and how can we prevent them?"},
+  domestic:{kr:"국내 여행",d:"You indicated that you like to travel within your country. Where do you like to go, and what is special about that place?",r:"Tell me about how you usually prepare for a trip. What do you do before you leave, and what do you pack?",p:"Tell me about a memorable domestic trip. Where did you go, who did you go with, and what happened?",c:"How has domestic travel changed in your country compared to the past?",i:"Some popular tourist spots suffer from overtourism. What problems does this cause for local residents, and what can be done?"},
+  overseas:{kr:"해외 여행",d:"You indicated that you like to travel abroad. Tell me about a country you have visited. What was it like, and how was it different from your country?",r:"What do you usually do to prepare for an overseas trip? Tell me about the steps you take before you leave.",p:"Tell me about a memorable experience from a trip abroad. Something special or unexpected may have happened. Give me as many details as possible.",c:"How has traveling abroad changed compared to the past? Think about booking, prices, and how people travel.",i:"Some people say traveling abroad helps people understand other cultures. Others say it harms the environment. What do you think?"},
+  staycation:{kr:"집에서 보내는 휴가",d:"You indicated that you like to spend your vacation at home. Tell me about the people you like to see and the things you like to do during a vacation at home.",r:"What do you usually do on the first day of a vacation at home? Tell me about a typical vacation day from morning to night.",p:"Tell me about a memorable vacation you spent at home. What did you do, and why was it memorable?",c:"How have the ways people spend their vacations changed compared to the past?",i:"Many people in your country don't use all of their vacation days. Why do you think this happens, and what should companies do about it?"},
+  /* ----- 돌발 주제 ----- */
+  recycling:{kr:"재활용",u:1,d:"I'd like to know about recycling in your country. How do people recycle? What kinds of things do they recycle?",r:"Tell me about how you recycle at home. What do you do, and how often do you do it?",p:"Have you ever had a problem with recycling or seen something interesting related to recycling? Tell me what happened.",c:"How has recycling changed in your country compared to the past?",i:"Plastic waste is a serious environmental problem. What causes it, and what should individuals and companies do?"},
+  weather:{kr:"날씨·계절",u:1,d:"Tell me about the weather in your country. What are the seasons like, and which season do you like the most?",r:"What do people in your country usually do in each season? What do you do when the weather is bad?",p:"Tell me about a memorable experience you had because of the weather, such as a typhoon, heavy snow, or a heat wave.",c:"How has the weather in your country changed compared to when you were young?",i:"Climate change is affecting the weather all over the world. What changes have people noticed, and what can be done?"},
+  technology:{kr:"기술·전자기기",u:1,d:"Tell me about a piece of technology you use often, like a smartphone or a computer. What do you use it for?",r:"How do you usually use technology in your daily life? Tell me about a typical day from morning to night.",p:"Tell me about the first time you used a new piece of technology. How did you feel, and was it difficult to learn?",c:"Compare the technology people used when you were young with the technology people use today.",i:"Some people worry that we depend too much on technology. What problems can this cause, and what can we do about it?"},
+  transport:{kr:"교통",u:1,d:"Tell me about transportation in your country. What kinds of transportation do people use?",r:"How do you usually get around? Tell me about your typical commute or how you travel around your city.",p:"Tell me about a memorable experience you had while using public transportation. What happened?",c:"How has transportation in your city changed over the years?",i:"Traffic jams are a big problem in many cities. What causes them, and what solutions can you suggest?"},
+  holidays:{kr:"명절·기념일",u:1,d:"Tell me about a holiday that is important in your country. What do people do on that day?",r:"What do you usually do during holidays? Who do you spend time with?",p:"Tell me about a memorable holiday from your childhood. What happened, and why do you remember it?",c:"How has the way people celebrate holidays changed compared to the past?",i:"Some people feel stressed during holidays. Why do you think this happens?"},
+  restaurant:{kr:"식당·외식",u:1,d:"Tell me about a restaurant you like to go to. Where is it, and what kind of food does it serve?",r:"How often do you eat out, and who do you usually go with? What do you usually do when you eat out?",p:"Tell me about a memorable experience at a restaurant. Maybe the food was amazing or there was a problem.",c:"How have restaurants and eating-out habits changed compared to the past?",i:"Food prices at restaurants keep going up. Why is this happening, and how does it affect people?"},
+  bank:{kr:"은행",u:1,d:"Tell me about the banks in your country. What do they look like, and what services do they offer?",r:"What do you usually do when you go to the bank? Tell me about the steps from beginning to end.",p:"Tell me about a time when you had a problem at a bank or with your bank account. What happened, and how did you solve it?",c:"How has banking changed compared to the past? Think about mobile banking and online services.",i:"Many bank branches are closing because of mobile banking. What problems does this cause, especially for older people?"},
+  hotel:{kr:"호텔",u:1,d:"Tell me about the hotels in your country. What are they like, and where are they usually located?",r:"What do you usually do when you check into a hotel? Tell me about the steps from arrival to check-out.",p:"Tell me about a memorable experience you had at a hotel.",c:"How have hotels changed compared to the past?",i:"Short-term rental services are becoming popular. How do they affect hotels and local neighborhoods?"},
+  health:{kr:"건강",u:1,d:"Tell me about a healthy person you know. What does that person do to stay healthy?",r:"What do you usually do to stay healthy? Tell me about your habits.",p:"Tell me about a time when you changed something in your life to become healthier. What did you do, and what happened?",c:"How have people's ideas about health changed compared to the past?",i:"Many young people have unhealthy lifestyles these days. Why is this, and what should be done?"}
+};
+
+/* 롤플레이 세트: ask(질문하기, 저레벨) / a(상황 질문하기) / b(문제 해결) / c(관련 경험) */
+const RP = {
+  movies:{ask:"I also like to go to the movies. Ask me three or four questions about the movies I like.",a:"I'd like to give you a situation and ask you to act it out. You want to see a movie with a friend this weekend. Call your friend and ask three or four questions to make plans.",b:"I'm sorry, but there is a problem I need you to resolve. When you arrive at the theater, you find out that the tickets you booked are for the wrong day. Explain the situation to the staff and offer two or three alternatives.",c:"That's the end of the situation. Have you ever had a problem when you made plans with someone? Tell me what happened and how you dealt with it."},
+  concert:{ask:"I also enjoy concerts. Ask me three or four questions about the concerts I go to.",a:"I'd like you to act out a situation. You want to buy tickets for a concert. Call the ticket office and ask three or four questions about the concert.",b:"There is a problem. You and your friend can't go to the concert because something urgent came up. Call your friend, explain the situation, and suggest two or three alternatives.",c:"That's the end of the situation. Have you ever had to cancel plans because of something unexpected? Tell me what happened."},
+  park:{ask:"I like going to parks too. Ask me three or four questions about the park I go to.",a:"Please act out this situation. You want to go to a park with a friend this weekend. Call your friend and ask three or four questions to make plans.",b:"There is a problem. It suddenly started raining on the day you planned to go to the park. Call your friend, explain the situation, and suggest two or three other things you could do.",c:"That's the end of the situation. Have you ever had your plans ruined by bad weather? Tell me what happened."},
+  cafe:{ask:"I like going to cafes too. Ask me three or four questions about my favorite cafe.",a:"I'd like you to act out a situation. A new cafe opened near your home. Call the cafe and ask three or four questions about it.",b:"There's a problem. You ordered a drink at the cafe, but you were given the wrong one. Explain the situation to the staff and suggest two or three ways to solve the problem.",c:"That's the end of the situation. Have you ever received the wrong order at a restaurant or cafe? Tell me what happened and how it was solved."},
+  shopping:{ask:"I like shopping too. Ask me three or four questions about where I like to shop.",a:"Please act out this situation. You want to buy a gift for a friend at a department store. Ask the clerk three or four questions about the item you want.",b:"There's a problem. When you got home, you found that the item you bought was damaged. Call the store, explain the situation, and suggest two or three ways to solve it.",c:"That's the end of the situation. Have you ever bought something that was broken or not what you expected? Tell me what happened."},
+  music:{ask:"I also like listening to music. Ask me three or four questions about the music I like.",a:"Please act out this situation. You want to buy a new pair of headphones. Go to an electronics store and ask the clerk three or four questions.",b:"There is a problem. The headphones you bought stopped working after one day. Call the store, explain the problem, and suggest two or three solutions.",c:"That's the end of the situation. Have you ever had a problem with an electronic device you bought? Tell me what happened."},
+  cooking:{ask:"I like cooking too. Ask me three or four questions about the food I cook.",a:"Please act out this situation. You want to take a cooking class. Call the cooking school and ask three or four questions about the class.",b:"There is a problem. You signed up for the cooking class, but you can't attend because of a schedule conflict. Call the school, explain the situation, and suggest two or three alternatives.",c:"That's the end of the situation. Have you ever had a schedule conflict that made you change your plans? Tell me what happened."},
+  gym:{ask:"I also go to the gym. Ask me three or four questions about my workout routine.",a:"Please act out this situation. You want to join a new gym. Call the gym and ask three or four questions about membership.",b:"There is a problem. You signed up for the gym, but you got injured and can't work out for a month. Call the gym, explain the situation, and suggest two or three solutions.",c:"That's the end of the situation. Have you ever had to stop doing something you enjoyed because of an unexpected problem? Tell me what happened."},
+  cycling:{ask:"I also like riding a bike. Ask me three or four questions about my biking habits.",a:"Please act out this situation. You want to rent a bike. Call the rental shop and ask three or four questions.",b:"There's a problem. The bike you rented got a flat tire. Call the rental shop, explain the situation, and suggest two or three ways to solve it.",c:"That's the end of the situation. Have you ever had a problem with something you rented or borrowed? Tell me what happened."},
+  domestic:{ask:"I like traveling in my country too. Ask me three or four questions about my favorite travel destination.",a:"Please act out this situation. You are planning a trip with a friend. Call your friend and ask three or four questions to plan the trip.",b:"There is a problem. The hotel you booked has no record of your reservation. Explain the situation to the hotel staff and suggest two or three solutions.",c:"That's the end of the situation. Have you ever had a problem with a reservation while traveling? Tell me what happened."},
+  overseas:{ask:"I like traveling abroad too. Ask me three or four questions about my last trip.",a:"Please act out this situation. You want to book a trip abroad. Call a travel agency and ask three or four questions about the trip.",b:"There is a problem. Your flight was canceled at the airport. Explain the situation to the airline staff and suggest two or three alternatives.",c:"That's the end of the situation. Have you ever had a problem at an airport or while traveling? Tell me what happened in detail."},
+  home:{ask:"I live in an apartment. Ask me three or four questions about my home.",a:"Please act out this situation. You are looking for a new place to live. Call a real estate agent and ask three or four questions about an apartment.",b:"There is a problem. After moving in, you found that something in the apartment is broken. Call the landlord, explain the situation, and suggest two or three solutions.",c:"That's the end of the situation. Have you ever had a problem at home, like something breaking or a noisy neighbor? Tell me what happened."},
+  restaurant:{ask:"I like to eat out too. Ask me three or four questions about my favorite restaurant.",a:"Please act out this situation. You want to make a reservation at a restaurant for a special occasion. Call the restaurant and ask three or four questions.",b:"There is a problem. When you arrive at the restaurant, they have no record of your reservation. Explain the situation and suggest two or three solutions.",c:"That's the end of the situation. Have you ever had a problem with a reservation? Tell me what happened."},
+  bank:{ask:"I go to the bank sometimes. Ask me three or four questions about my bank.",a:"Please act out this situation. You want to open a new bank account. Call the bank and ask three or four questions.",b:"There is a problem. You lost your bank card. Call the bank, explain the situation, and ask for two or three ways to solve the problem.",c:"That's the end of the situation. Have you ever lost something important? Tell me what happened and how you dealt with it."},
+  hotel:{ask:"I often stay at hotels when I travel. Ask me three or four questions about the hotels I stay at.",a:"Please act out this situation. You want to book a hotel room. Call the hotel and ask three or four questions about the room.",b:"There is a problem. The room you were given is very noisy and dirty. Explain the problem to the front desk and suggest two or three solutions.",c:"That's the end of the situation. Have you ever been disappointed by a place you stayed? Tell me what happened."},
+  technology:{ask:"I use my smartphone a lot. Ask me three or four questions about how I use it.",a:"Please act out this situation. You want to buy a new phone. Go to the store and ask the clerk three or four questions.",b:"There is a problem. Your new phone keeps turning off by itself. Call the store, explain the situation, and suggest two or three solutions.",c:"That's the end of the situation. Have you ever had a problem with your phone or computer? Tell me what happened."}
+};
+
+/* 설문 구성 */
+const SURVEY = {
+  job:["사업/회사","재택근무/재택사업","교사/교육자","일 경험 없음"],
+  student:["예","아니요"],
+  living:["개인 주택이나 아파트에 홀로 거주","친구나 룸메이트와 함께 주택이나 아파트에 거주","가족(배우자/자녀/기타 가족)과 함께 주택이나 아파트에 거주","학교 기숙사"],
+  groups:[
+    {title:"여가 활동",min:2,items:[["movies","영화 보기"],["concert","공연·콘서트 보기"],["park","공원 가기"],["beach","해변·캠핑 가기"],["cafe","카페 가기"],["shopping","쇼핑하기"],["tv","TV·리얼리티쇼 시청"]]},
+    {title:"취미·관심사",min:1,items:[["music","음악 감상"],["cooking","요리하기"],["reading","독서"]]},
+    {title:"운동",min:1,items:[["jogging","조깅"],["walking","걷기"],["gym","헬스"],["yoga","요가"],["cycling","자전거"],["swimming","수영"]]},
+    {title:"휴가·출장",min:1,items:[["domestic","국내 여행"],["overseas","해외 여행"],["staycation","집에서 보내는 휴가"]]}
+  ]
+};
+
+const LEVELS = [
+  "단어 10개 이내로 말할 수 있다.",
+  "물건, 색깔, 요일, 음식, 옷, 숫자 같은 기본 단어는 말할 수 있다. 완전한 문장이나 간단한 질문은 아직 어렵다.",
+  "나 자신, 직장, 가까운 사람과 장소, 일상에 대한 기본 정보를 간단한 문장으로 말할 수 있다. 간단한 질문도 할 수 있다.",
+  "나 자신, 일상, 일·학교, 취미에 대해 간단한 대화를 할 수 있다. 익숙한 주제는 쉽게 문장을 만들고, 원하는 것을 질문할 수 있다.",
+  "친숙한 주제와 일·학교, 개인적·사회적 관심사에 대해 자신 있게 대화할 수 있다. 과거·현재·미래의 일을 말하고 필요하면 설명할 수 있으며, 예상치 못한 상황에도 대처할 수 있다.",
+  "개인적·사회적·전문적 주제에 대해 의견을 내며 토론할 수 있다. 다양하고 어려운 주제도 정확하고 자세하게 설명할 수 있다."
+];
+
+const TYPE_KR = {intro:"자기소개",d:"묘사",r:"루틴·습관",p:"과거 경험",c:"비교·변화",i:"이슈·의견",ask:"질문하기",a:"롤플레이 · 질문",b:"롤플레이 · 문제 해결",rc:"롤플레이 · 관련 경험"};
+
+/* ========================================================= 상태 */
+const S = {
+  name:"", contact:"", code:"",
+  survey:{job:null,student:null,living:null,picks:new Set()},
+  level:null, adjust:0,
+  questions:[], idx:0, answers:[],
+  startAt:0, endAt:0, finished:false, feedback:null
+};
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const fmt = s => { s=Math.max(0,Math.round(s)); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); };
+const scrollTop = () => window.scrollTo({top:0,behavior:"smooth"});
+
+/* ========================================================= 음성(TTS) */
+let VOICE = null;
+function loadVoices(){
+  const vs = speechSynthesis.getVoices().filter(v=>/^en(-|_)/i.test(v.lang));
+  const pref = ["Google US English","Samantha","Microsoft Aria","Microsoft Jenny","Ava","Allison","Natural"];
+  VOICE = null;
+  for(const p of pref){ const v = vs.find(v=>v.name.includes(p)); if(v){VOICE=v;break;} }
+  if(!VOICE) VOICE = vs.find(v=>/en-US/i.test(v.lang)) || vs[0] || null;
+  return vs;
+}
+if("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+let speakToken = 0;
+function speak(text, onStart){
+  return new Promise(resolve=>{
+    if(!("speechSynthesis" in window)){ resolve(); return; }
+    const my = ++speakToken;
+    speechSynthesis.cancel();
+    // 크롬은 긴 문장을 중간에 끊는 경우가 있어 문장 단위로 나눠 읽습니다
+    const parts = text.match(/[^.!?]+[.!?]*/g) || [text];
+    let i = 0;
+    const next = () => {
+      if(my!==speakToken){ resolve(); return; }
+      if(i>=parts.length){ resolve(); return; }
+      const sentence = parts[i++].trim();
+      const u = new SpeechSynthesisUtterance(sentence);
+      u.lang = "en-US"; u.rate = 0.93; if(VOICE) u.voice = VOICE;
+      // 일부 브라우저에서 끝 신호가 오지 않는 경우를 대비한 안전장치
+      let moved = false;
+      const go = () => { if(moved) return; moved = true; clearTimeout(wd); next(); };
+      const wd = setTimeout(go, 2500 + sentence.split(/\s+/).length * 600);
+      u.onend = go; u.onerror = go;
+      speechSynthesis.speak(u);
+    };
+    onStart && onStart();
+    next();
+  });
+}
+function stopSpeak(){ speakToken++; if("speechSynthesis" in window) speechSynthesis.cancel(); }
+
+/* ========================================================= 마이크·녹음·음성인식 */
+let stream=null, audioCtx=null, analyser=null, meterRAF=0;
+async function getMic(){
+  if(stream && stream.active) return stream;
+  stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  return stream;
+}
+function startMeter(el){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    const src = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser(); analyser.fftSize = 512; src.connect(analyser);
+    const data = new Uint8Array(analyser.fftSize);
+    cancelAnimationFrame(meterRAF);
+    const loop = () => {
+      analyser.getByteTimeDomainData(data);
+      let sum=0; for(const v of data){const x=(v-128)/128; sum+=x*x;}
+      const rms = Math.sqrt(sum/data.length);
+      el.style.width = Math.min(100, rms*400) + "%";
+      if(R.active) R.frames.push([performance.now(), rms]);
+      meterRAF = requestAnimationFrame(loop);
+    };
+    loop();
+  }catch(e){}
+}
+function stopMeter(){ cancelAnimationFrame(meterRAF); }
+function pickMime(){
+  if(!window.MediaRecorder) return null;
+  for(const m of ["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"]) if(MediaRecorder.isTypeSupported(m)) return m;
+  return "";
+}
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+const R = { mr:null, chunks:[], t0:0, final:"", interim:"", recognizing:false, active:false, frames:[], qEnd:null };
+
+/* ---------- 유창성 분석: 녹음 중 소리 크기를 기록해 멈춤·침묵을 계산 ---------- */
+function analyzeFrames(frames, qEnd){
+  if(frames.length < 20) return null;
+  const vals = frames.map(f=>f[1]).sort((a,b)=>a-b);
+  const pct = p => vals[Math.floor(p*(vals.length-1))];
+  const floor = pct(0.15), hi = pct(0.9);
+  const th = Math.max(0.01, floor + (hi-floor)*0.25);   // 주변 소음에 맞춰 자동으로 기준을 잡아요
+  let first=null, last=null;
+  for(const [t,v] of frames) if(v>th){ if(first===null) first=t; last=t; }
+  if(first===null) return {span:0, pauses:0, longPauses:0, maxPause:0, silencePct:100, latency:null};
+  const pauses=[]; let run=null;
+  for(const [t,v] of frames){
+    if(t<first || t>last) continue;
+    if(v<=th){ if(run===null) run=t; }
+    else if(run!==null){ const d=t-run; if(d>=250) pauses.push(d); run=null; } // 0.25초 미만은 음절 사이 끊김이라 제외
+  }
+  const span = (last-first)/1000;
+  const silent = pauses.reduce((s,d)=>s+d,0)/1000;
+  return {
+    span: Math.round(span*10)/10,
+    longPauses: pauses.filter(d=>d>=1500).length,
+    maxPause: Math.round(Math.max(0,...pauses)/100)/10,
+    silencePct: span>0 ? Math.round(100*silent/span) : 0,
+    latency: qEnd ? Math.max(0, Math.round((first-qEnd)/100)/10) : null
+  };
+}
+const wordCount = t => (String(t||"").match(/[A-Za-z][A-Za-z'’-]*/g)||[]).length;
+function fluency(a){
+  if(!a) return null;
+  const m = a.m || {};
+  const words = wordCount(a.transcript);
+  const wpm = (m.span>=5 && words) ? Math.round(words/(m.span/60)) : null;
+  const perMin = m.span>=5 ? Math.round(10*(m.longPauses||0)/(m.span/60))/10 : null;
+  return {words, wpm, longPauses:m.longPauses??null, perMin, silencePct:m.silencePct??null, maxPause:m.maxPause??null, latency:m.latency??null, span:m.span??null};
+}
+// 원더스피크 참고 기준 (공식 OPIc 기준이 아니라 연습용 눈금이에요)
+const BANDS = {
+  wpm: v => v==null?null : v<70?["느린 편","bad"] : v<100?["보통","mid"] : v<=170?["자연스러움","good"] : ["매우 빠름","mid"],
+  perMin: v => v==null?null : v<=1?["적음","good"] : v<=3?["보통","mid"] : ["많음","bad"],
+  silencePct: v => v==null?null : v<=20?["적음","good"] : v<=35?["보통","mid"] : ["많음","bad"],
+  latency: v => v==null?null : v<=3?["빠름","good"] : v<=6?["보통","mid"] : ["늦음","bad"]
+};
+
+function startRecording(){
+  R.chunks=[]; R.final=""; R.interim=""; R.t0=Date.now(); R.active=true; R.frames=[];
+  const mime = pickMime();
+  R.mr = new MediaRecorder(stream, mime ? {mimeType:mime} : undefined);
+  R.mr.ondataavailable = e => { if(e.data && e.data.size) R.chunks.push(e.data); };
+  R.mr.start(1000);
+  if(SR){
+    try{
+      rec = new SR(); rec.lang="en-US"; rec.continuous=true; rec.interimResults=true;
+      rec.onresult = e => {
+        let interim="";
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          const r=e.results[i];
+          if(r.isFinal) R.final += r[0].transcript.trim()+" "; else interim += r[0].transcript;
+        }
+        R.interim = interim;
+      };
+      rec.onerror = () => {};
+      rec.onend = () => { if(R.active){ try{ rec.start(); }catch(e){} } };
+      rec.start();
+    }catch(e){ rec=null; }
+  }
+}
+function stopRecording(){
+  return new Promise(resolve=>{
+    R.active=false;
+    const secs = (Date.now()-R.t0)/1000;
+    const m = analyzeFrames(R.frames, R.qEnd);
+    if(rec){ try{ rec.stop(); }catch(e){} }
+    const done = () => {
+      const type = (R.mr && R.mr.mimeType) || "audio/webm";
+      const blob = new Blob(R.chunks,{type});
+      // 음성인식 마지막 결과가 들어올 시간을 조금 줍니다
+      setTimeout(()=>{
+        const transcript = (R.final + (R.interim||"")).replace(/\s+/g," ").trim();
+        resolve({blob, url:URL.createObjectURL(blob), mime:type, seconds:secs, transcript, m});
+      }, 600);
+    };
+    if(R.mr && R.mr.state!=="inactive"){ R.mr.onstop = done; R.mr.stop(); } else done();
+  });
+}
+
+/* ========================================================= 문항 구성 */
+function q(type, text, topic){ return {type, text, topic, kr: topic ? TOPICS[topic]?.kr || "" : ""}; }
+function effLevel(){ return Math.max(1, Math.min(6, (S.level||3) + S.adjust)); }
+function buildFirstHalf(){
+  const picks = shuffle([...S.survey.picks]);
+  const homeTopic = S.survey.living===3 ? "neighborhood" : pick(["home","neighborhood"]);
+  const t2 = picks.find(t=>t!==homeTopic) || "movies";
+  S.used = new Set([homeTopic, t2]);
+  S.pickPool = picks;
+  const set = (t) => [q("d",TOPICS[t].d,t), q("r",TOPICS[t].r,t), q("p",TOPICS[t].p,t)];
+  S.questions = [
+    q("intro","Let's start the interview now. Tell me a little bit about yourself.",null),
+    ...set(homeTopic),
+    ...set(t2)
+  ];
+}
+function buildSecondHalf(){
+  const lv = effLevel();
+  const unexpected = shuffle(Object.keys(TOPICS).filter(k=>TOPICS[k].u));
+  const freePicks = S.pickPool.filter(t=>!S.used.has(t));
+  // Q8~10: 돌발 또는 설문 주제
+  const t3 = (Math.random()<0.6 || !freePicks.length) ? unexpected[0] : freePicks[0];
+  S.used.add(t3);
+  const set3 = [q("d",TOPICS[t3].d,t3), q("r",TOPICS[t3].r,t3), q(lv>=5?"c":"p", lv>=5?TOPICS[t3].c:TOPICS[t3].p, t3)];
+  // Q11~13: 롤플레이
+  const rpCands = [...S.pickPool.filter(t=>RP[t] && !S.used.has(t)), ...unexpected.filter(t=>RP[t] && !S.used.has(t)), ...Object.keys(RP)];
+  const tr = rpCands[0];
+  S.used.add(tr);
+  const r = RP[tr];
+  const set4 = lv<=3 ? [q("ask",r.ask,tr), q("a",r.a,tr), q("rc",r.c,tr)]
+                     : [q("a",r.a,tr), q("b",r.b,tr), q("rc",r.c,tr)];
+  // Q14~15: 고난도
+  const left = [...S.pickPool.filter(t=>!S.used.has(t)), ...unexpected.filter(t=>!S.used.has(t))];
+  const t5 = left[0] || S.pickPool[0];
+  let set5;
+  if(lv<=3) set5 = [q("d",TOPICS[t5].d,t5), q("p",TOPICS[t5].p,t5)];
+  else if(lv===4) set5 = [q("c",TOPICS[t5].c,t5), q("p",TOPICS[t5].p,t5)];
+  else set5 = [q("c",TOPICS[t5].c,t5), q("i",TOPICS[t5].i,t5)];
+  S.questions = [...S.questions.slice(0,7), ...set3, ...set4, ...set5];
+}
+
+/* ========================================================= 타이머 */
+let timerInt=0;
+function startTimer(){
+  S.startAt = Date.now();
+  const el = $("#timer"); el.style.display="inline-block";
+  clearInterval(timerInt);
+  timerInt = setInterval(()=>{
+    const left = CONFIG.TOTAL_MINUTES*60 - (Date.now()-S.startAt)/1000;
+    el.textContent = "남은 시간 " + fmt(left);
+    el.classList.toggle("warn", left < 300);
+    if(left<=0){ clearInterval(timerInt); timeUp(); }
+  },500);
+}
+async function timeUp(){
+  if(S.finished) return;
+  stopSpeak();
+  if(R.active){ const a = await stopRecording(); S.answers[S.idx] = a; stopMeter(); }
+  finishExam(true);
+}
+
+/* ========================================================= 화면: 시작 */
+function viewIntro(){
+  app.innerHTML = `
+  <section class="card hero">
+    <div class="blob"></div><div class="blob2"></div>
+    <div style="position:relative">
+      <span class="tag">실전과 같은 흐름 · 약 40분</span>
+      <h1>OPIc 실전 모의고사</h1>
+      <p>실제 시험처럼 질문은 <b>소리로만</b> 나오고, 답변은 녹음됩니다.<br>시험이 끝나면 내 답변을 다시 듣고, AI 피드백을 받고, 선생님께 제출할 수 있어요.</p>
+      <div class="steps">
+        <div><b>STEP 1</b>Background Survey</div>
+        <div><b>STEP 2</b>Self Assessment</div>
+        <div><b>STEP 3</b>15문항 인터뷰</div>
+        <div><b>STEP 4</b>다시 듣기 · 피드백</div>
+      </div>
+    </div>
+  </section>
+  <section class="card">
+    <h2>응시자 정보</h2>
+    <p class="lead">선생님께 제출할 때 함께 전달돼요.</p>
+    <div class="row">
+      <div><label class="f">이름</label><input class="inp" id="nm" placeholder="홍길동" value="${esc(S.name)}"></div>
+      <div><label class="f">연락처 또는 수강 반 <span class="muted">(선택)</span></label><input class="inp" id="ct" placeholder="010-0000-0000 / 화목 7시반" value="${esc(S.contact)}"></div>
+    </div>
+    ${CONFIG.ASK_CODE ? `<label class="f">수강생 코드</label><input class="inp" id="cd" placeholder="학원에서 받은 코드" value="${esc(S.code)}">` : ""}
+    <h3>🎧 소리 · 🎙️ 마이크 확인</h3>
+    <div class="mic-test">
+      <button class="btn ghost sm" id="tts">질문 음성 들어보기</button>
+      <button class="btn ghost sm" id="mic">마이크 켜기</button>
+      <div class="meter"><i id="mt"></i></div>
+      <span id="micState" class="muted">말해 보면 막대가 움직여요</span>
+    </div>
+    <div class="notice">
+      <b>권장 환경:</b> PC 또는 노트북의 <b>Chrome 브라우저</b>, 조용한 곳, 이어폰 사용.<br>
+      답변 녹음과 동시에 음성 인식(받아쓰기)이 진행돼요. Chrome이 아니면 녹음은 되지만 받아쓰기가 안 될 수 있어요.
+      ${SR ? "" : "<br><b style='color:#c0392b'>지금 브라우저는 음성 인식을 지원하지 않아요. AI 피드백을 받으려면 결과 화면에서 답변을 직접 입력해야 해요.</b>"}
+    </div>
+    <div class="actions"><button class="btn" id="go" disabled>마이크를 켜면 시작할 수 있어요</button></div>
+  </section>`;
+  $("#tts").onclick = () => speak("Hello! I'm Sophie, and I'll be your interviewer today. Can you hear me clearly?");
+  $("#mic").onclick = async () => {
+    try{
+      await getMic(); startMeter($("#mt"));
+      $("#micState").innerHTML = '<span class="ok">✓ 마이크 연결됨</span>';
+      $("#go").disabled = false; $("#go").textContent = "시작하기 →";
+    }catch(e){
+      let msg;
+      if(window.top !== window.self) msg = "미리보기 화면에서는 마이크를 쓸 수 없어요. GitHub Pages 주소로 접속하거나 파일을 내려받아 Chrome으로 직접 열어 주세요.";
+      else if(!window.isSecureContext) msg = "https 주소에서만 마이크가 켜져요. GitHub Pages(https://...) 주소로 접속해 주세요.";
+      else if(e.name==="NotFoundError") msg = "연결된 마이크를 찾지 못했어요. 이어폰 마이크나 노트북 마이크가 연결돼 있는지 확인해 주세요.";
+      else if(e.name==="NotReadableError") msg = "다른 프로그램(줌, 카톡 통화 등)이 마이크를 쓰고 있어요. 그 프로그램을 끄고 다시 눌러 주세요.";
+      else msg = "마이크가 차단돼 있어요. 주소창 왼쪽 아이콘 → 사이트 설정 → 마이크 '허용'으로 바꾼 뒤 새로고침해 주세요. (Mac은 시스템 설정 → 개인정보 보호 → 마이크에서 Chrome도 켜져 있어야 해요)";
+      $("#micState").innerHTML = '<span class="err">'+msg+'</span>';
+    }
+  };
+  if(stream && stream.active){ $("#mic").click(); }
+  $("#go").onclick = () => {
+    S.name = $("#nm").value.trim(); S.contact = $("#ct").value.trim();
+    if(CONFIG.ASK_CODE) S.code = $("#cd").value.trim();
+    if(!S.name){ $("#nm").focus(); $("#nm").style.borderColor="var(--red)"; return; }
+    stopMeter(); viewSurvey();
+  };
+}
+
+/* ========================================================= 화면: 설문 */
+function viewSurvey(){
+  const sv = S.survey;
+  const single = (key, arr, title) => `
+    <div class="survey-part"><h3>${title}</h3><div class="chk">
+      ${arr.map((t,i)=>`<span class="chip ${sv[key]===i?"on":""}" data-k="${key}" data-i="${i}">${t}</span>`).join("")}
+    </div></div>`;
+  app.innerHTML = `
+  <section class="card">
+    <div class="badge o">STEP 1</div>
+    <h2 style="margin-top:10px">Background Survey</h2>
+    <p class="lead">실제 시험처럼 질문 주제가 여기서 정해져요. 4번 항목은 <b>총 12개 이상</b> 골라 주세요.</p>
+    ${single("job",SURVEY.job,"1. 현재 귀하는 어느 분야에 종사하고 계십니까?")}
+    ${single("student",SURVEY.student,"2. 현재 귀하는 학생이십니까?")}
+    ${single("living",SURVEY.living,"3. 현재 귀하는 어디에 살고 계십니까?")}
+    <div class="survey-part"><h3>4. 아래 활동 중 해당하는 것을 모두 골라 주세요.</h3>
+      ${SURVEY.groups.map(g=>`
+        <p class="muted" style="margin:14px 0 8px"><b style="color:var(--ink)">${g.title}</b> · ${g.min}개 이상</p>
+        <div class="chk">${g.items.map(([id,t])=>`<span class="chip ${sv.picks.has(id)?"on":""}" data-p="${id}">${t}</span>`).join("")}</div>`).join("")}
+    </div>
+    <div class="counter"><span>선택 <b id="cnt">0</b> / 12</span><span class="muted" id="cntMsg" style="color:#c9d3e0"></span><span class="spacer"></span>
+      <button class="btn orange sm" id="next" disabled>다음 →</button></div>
+  </section>`;
+  const update = () => {
+    const n = sv.picks.size; $("#cnt").textContent = n;
+    const missGroup = SURVEY.groups.find(g=>g.items.filter(([id])=>sv.picks.has(id)).length < g.min);
+    let msg = "";
+    if(sv.job===null||sv.student===null||sv.living===null) msg="1~3번을 골라 주세요";
+    else if(missGroup) msg=`'${missGroup.title}'에서 ${missGroup.min}개 이상`;
+    else if(n<12) msg=`${12-n}개 더 골라 주세요`;
+    $("#cntMsg").textContent = msg;
+    $("#next").disabled = !!msg;
+  };
+  app.querySelectorAll("[data-k]").forEach(el=>el.onclick=()=>{
+    sv[el.dataset.k] = +el.dataset.i;
+    app.querySelectorAll(`[data-k="${el.dataset.k}"]`).forEach(x=>x.classList.toggle("on",x===el));
+    update();
+  });
+  app.querySelectorAll("[data-p]").forEach(el=>el.onclick=()=>{
+    const id=el.dataset.p; sv.picks.has(id)?sv.picks.delete(id):sv.picks.add(id);
+    el.classList.toggle("on"); update();
+  });
+  $("#next").onclick = viewLevel;
+  update(); scrollTop();
+}
+
+/* ========================================================= 화면: 자가평가 */
+function viewLevel(){
+  app.innerHTML = `
+  <section class="card">
+    <div class="badge o">STEP 2</div>
+    <h2 style="margin-top:10px">Self Assessment</h2>
+    <p class="lead">내 영어 말하기 수준과 가장 가까운 것을 골라 주세요. 고른 단계에 따라 질문 난이도가 달라져요.</p>
+    <div class="levels">
+      ${LEVELS.map((t,i)=>`<div class="lv ${S.level===i+1?"on":""}" data-l="${i+1}"><div class="n">${i+1}</div><div class="t">${t}</div></div>`).join("")}
+    </div>
+    <div class="notice blue">💡 보통 목표 등급이 <b>IM</b>이면 3~4단계, <b>IH~AL</b>이면 5~6단계를 많이 골라요.</div>
+    <div class="actions">
+      <button class="btn ghost" id="back">← 설문 다시 보기</button>
+      <button class="btn" id="next" ${S.level?"":"disabled"}>다음 →</button>
+    </div>
+  </section>`;
+  app.querySelectorAll(".lv").forEach(el=>el.onclick=()=>{
+    S.level=+el.dataset.l; app.querySelectorAll(".lv").forEach(x=>x.classList.toggle("on",x===el)); $("#next").disabled=false;
+  });
+  $("#back").onclick = viewSurvey;
+  $("#next").onclick = viewReady;
+  scrollTop();
+}
+
+/* ========================================================= 화면: 시작 전 안내 */
+function viewReady(){
+  app.innerHTML = `
+  <section class="card">
+    <div class="badge o">STEP 3</div>
+    <h2 style="margin-top:10px">인터뷰를 시작하기 전에</h2>
+    <ul class="muted" style="font-size:15px;line-height:1.9;padding-left:20px;color:var(--ink)">
+      <li>총 <b>15문항</b>, 제한 시간은 <b>${CONFIG.TOTAL_MINUTES}분</b>이에요. 시간이 끝나면 자동으로 종료돼요.</li>
+      <li>▶ 버튼을 누르면 질문이 영어 음성으로 나와요. <b>질문 글자는 보이지 않아요.</b></li>
+      <li>질문이 끝난 뒤 <b>5초 안에 한 번</b> 다시 들을 수 있어요. 5초가 지나면 녹음이 자동으로 시작돼요.</li>
+      <li>답변을 마치면 <b>[다음]</b>을 눌러요. 한 문항에 1~2분 정도 답하는 걸 권장해요.</li>
+      <li>7번 문항이 끝나면 남은 질문의 난이도를 다시 고를 수 있어요.</li>
+    </ul>
+    <div class="actions">
+      <button class="btn ghost" id="back">← 자가평가</button>
+      <button class="btn orange" id="start">인터뷰 시작</button>
+    </div>
+  </section>`;
+  $("#back").onclick = viewLevel;
+  $("#start").onclick = async () => {
+    try{ await getMic(); }catch(e){ alertModal("마이크 권한이 필요해요","주소창 왼쪽 자물쇠 아이콘에서 마이크를 허용한 뒤 다시 눌러 주세요."); return; }
+    buildFirstHalf(); S.idx=0; S.answers=[]; S.finished=false; S.feedback=null; S.adjust=0;
+    startTimer(); viewQuestion();
+  };
+  scrollTop();
+}
+
+/* ========================================================= 화면: 문항 */
+const AVATAR = `
+<svg viewBox="0 0 200 200" aria-hidden="true">
+  <circle cx="100" cy="100" r="96" fill="#dbe9fd"/>
+  <path d="M40 190c6-38 30-56 60-56s54 18 60 56z" fill="#0c70f2"/>
+  <path d="M86 130h28v14a14 14 0 0 1-28 0z" fill="#f6c9a8"/>
+  <path d="M56 92c0-34 20-54 44-54s44 20 44 54c0 22-6 40-10 48H66c-4-8-10-26-10-48z" fill="#3a2a22"/>
+  <ellipse cx="100" cy="96" rx="34" ry="40" fill="#f9d6bb"/>
+  <path d="M66 82c10-22 34-30 56-20 8 4 12 10 12 18-18-2-36-10-48-20-4 10-12 18-20 22z" fill="#3a2a22"/>
+  <circle cx="87" cy="96" r="4" fill="#2b2b2b"/><circle cx="113" cy="96" r="4" fill="#2b2b2b"/>
+  <path d="M80 86q7-4 14 0M106 86q7-4 14 0" stroke="#3a2a22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <ellipse class="mouth" cx="100" cy="117" rx="9" ry="4.5" fill="#d9605a" style="transform-origin:100px 117px"/>
+  <circle cx="80" cy="108" r="5" fill="#ffae6a" opacity=".45"/><circle cx="120" cy="108" r="5" fill="#ffae6a" opacity=".45"/>
+</svg>`;
+function viewQuestion(){
+  const n = S.idx, total = 15, Q = S.questions[n];
+  app.innerHTML = `
+  <div class="progress">${Array.from({length:total},(_,i)=>`<i class="${i<n?"done":i===n?"cur":""}"></i>`).join("")}</div>
+  <section class="card">
+    <div class="exam">
+      <div class="avatar" id="av">${AVATAR}<div><div class="nm">Sophie</div><div class="st" id="avst">대기 중</div></div></div>
+      <div class="qbox">
+        <div class="qn">Question ${n+1} of ${total}</div>
+        <h2 id="qh">▶ 버튼을 눌러 질문을 들어 보세요</h2>
+        <button class="big-play" id="play" aria-label="질문 듣기"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+        <div class="replay-bar" id="rb">
+          <button class="btn ghost sm" id="replay">🔁 다시 듣기 (1회)</button>
+          <button class="btn sm" id="now">바로 답변 시작</button>
+          <span class="count" id="cd5"></span>
+        </div>
+        <div class="rec-panel" id="rp">
+          <div class="top"><span class="dot"></span> 녹음 중 <span class="el" id="el">00:00</span></div>
+          <div class="meter"><i id="mt"></i></div>
+          <div class="actions" style="margin-top:14px"><button class="btn" id="next">다음 ▶</button></div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+  let replayed=false, cdInt=0, elInt=0, recStarted=false;
+  R.qEnd = null;
+  const av=$("#av"), avst=$("#avst");
+  const setSpeaking = on => { av.classList.toggle("speaking",on); avst.textContent = on ? "질문하는 중…" : (recStarted?"듣고 있어요":"대기 중"); };
+  const beginRecord = () => {
+    if(recStarted) return; recStarted=true;
+    clearInterval(cdInt); stopSpeak(); setSpeaking(false);
+    $("#rb").style.display="none"; $("#rp").style.display="block";
+    $("#qh").textContent = "답변해 주세요";
+    startRecording(); startMeter($("#mt"));
+    elInt = setInterval(()=>{ $("#el").textContent = fmt((Date.now()-R.t0)/1000); },250);
+    avst.textContent = "듣고 있어요";
+  };
+  const replayWindow = () => {
+    $("#rb").style.display="flex";
+    $("#replay").style.display = replayed ? "none" : "";
+    let left=5; $("#cd5").textContent = `${left}초 후 녹음 시작`;
+    clearInterval(cdInt);
+    cdInt = setInterval(()=>{ left--; $("#cd5").textContent = `${left}초 후 녹음 시작`; if(left<=0) beginRecord(); },1000);
+  };
+  const play = async () => {
+    $("#play").disabled = true; $("#qh").textContent = "질문을 잘 들어 보세요";
+    $("#rb").style.display="none"; clearInterval(cdInt);
+    setSpeaking(true);
+    await speak(Q.text);
+    if(recStarted) return;
+    R.qEnd = performance.now();   // 질문이 끝난 시점 → 첫마디까지 걸린 시간 계산용
+    setSpeaking(false);
+    $("#qh").textContent = "준비되면 답변을 시작하세요";
+    replayWindow();
+  };
+  $("#play").onclick = play;
+  $("#replay").onclick = () => { replayed=true; play(); };
+  $("#now").onclick = beginRecord;
+  $("#next").onclick = async () => {
+    $("#next").disabled = true; $("#next").innerHTML = '<span class="spin"></span>저장 중';
+    clearInterval(elInt); stopMeter();
+    const a = await stopRecording();
+    S.answers[n] = a;
+    if(S.finished) return;
+    S.idx++;
+    if(S.idx===7) viewAdjust();
+    else if(S.idx>=15) finishExam(false);
+    else viewQuestion();
+  };
+  scrollTop();
+}
+
+/* ========================================================= 화면: 난이도 재조정 */
+function viewAdjust(){
+  app.innerHTML = `
+  <section class="card">
+    <div class="badge o">난이도 재조정</div>
+    <h2 style="margin-top:10px">남은 질문의 난이도를 골라 주세요</h2>
+    <p class="lead">실제 시험처럼 7번 문항 뒤에 한 번 고를 수 있어요. 타이머는 계속 흘러가요.</p>
+    <div class="levels">
+      <div class="lv" data-a="-1"><div class="n">↓</div><div class="t"><b>쉬운 질문</b><br>지금보다 쉬운 질문을 받을래요.</div></div>
+      <div class="lv" data-a="0"><div class="n">=</div><div class="t"><b>비슷한 질문</b><br>지금과 비슷한 난이도로 갈게요.</div></div>
+      <div class="lv" data-a="1"><div class="n">↑</div><div class="t"><b>어려운 질문</b><br>더 어려운 질문에 도전할래요.</div></div>
+    </div>
+  </section>`;
+  app.querySelectorAll(".lv").forEach(el=>el.onclick=()=>{
+    S.adjust = +el.dataset.a; buildSecondHalf(); viewQuestion();
+  });
+  scrollTop();
+}
+
+/* ========================================================= 시험 종료 → 결과 */
+function finishExam(timeout){
+  if(S.finished) return;
+  S.finished = true; S.endAt = Date.now();
+  clearInterval(timerInt); $("#timer").style.display="none";
+  stopSpeak(); stopMeter();
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  if(CONFIG.SCRIPT_URL && CONFIG.STUDENT_VIEW==="grade_only") viewProcessing(timeout);
+  else {
+    if(timeout) alertModal("시간이 끝났어요", "제한 시간 "+CONFIG.TOTAL_MINUTES+"분이 지나 시험이 종료됐어요. 답변한 문항까지 결과를 볼 수 있어요.");
+    viewResult();
+  }
+}
+
+/* ========================================================= 학생용: 자동 분석·제출 → 예상 등급만 */
+async function viewProcessing(timeout){
+  const n = S.answers.filter(Boolean).length;
+  app.innerHTML = `
+  <section class="card" style="text-align:center;padding:48px 28px">
+    <div class="badge">${timeout?"시간 종료":"시험 완료"}</div>
+    <h2 style="margin-top:14px">${esc(S.name)}님, 수고했어요! 👏</h2>
+    <p class="lead">답변을 정리하고 있어요. 창을 닫지 말고 잠시만 기다려 주세요.</p>
+    <div style="max-width:420px;margin:0 auto;text-align:left">
+      <div class="bar"><i id="pBar"></i></div>
+      <p class="muted" id="pMsg" style="text-align:center">준비 중…</p>
+    </div>
+  </section>`;
+  const step = (msg,pct) => { $("#pMsg").textContent = msg; $("#pBar").style.width = pct+"%"; };
+  scrollTop();
+  if(!n){ viewGradeOnly(null, "답변한 문항이 없어요."); return; }
+  // 1) AI 분석 (받아쓰기가 있을 때만)
+  let note = "";
+  const its = items();
+  if(its.some(x=>x.transcript.trim())){
+    step("AI가 답변을 분석하고 있어요… (30초~1분)", 8);
+    try{ const j = await api({action:"feedback", level:S.level, items:its}); S.feedback = j.feedback; }
+    catch(e){ S.feedback = null; note = "AI 분석이 지연돼서 예상 등급은 선생님이 직접 확인해 알려드릴게요."; }
+  } else {
+    note = "음성 인식 결과가 없어서 예상 등급은 선생님이 직접 듣고 알려드릴게요.";
+  }
+  // 2) 선생님께 제출
+  try{
+    await doSubmit((msg,pct)=>step(msg, 30 + pct*0.7));
+    S.submitted = true;
+    viewGradeOnly(S.feedback, note);
+  }catch(e){
+    S.submitted = false;
+    viewGradeOnly(S.feedback, note, e.message);
+  }
+}
+function viewGradeOnly(fb, note, submitError){
+  const grade = fb && fb.estimated_grade;
+  app.innerHTML = `
+  <section class="card grade-card" style="text-align:center;padding:44px 28px">
+    <div class="muted" style="color:#9fb0c8">AI 예상 등급</div>
+    <div class="grade" style="font-size:${grade?"84px":"40px"};margin:12px 0">${grade?esc(grade):"확인 중"}</div>
+    <p style="color:#dbe4f0;line-height:1.7;margin:0 auto;max-width:520px">
+      ${grade?"받아쓰기와 말하기 흐름을 바탕으로 한 <b>참고용 예상 등급</b>이에요.":esc(note||"")}
+    </p>
+  </section>
+  <section class="card">
+    ${submitError ? `
+      <h2>⚠️ 답변을 선생님께 보내지 못했어요</h2>
+      <p class="lead">${esc(submitError)}</p>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="btn" id="retry">다시 보내기</button>
+        <button class="btn ghost" id="zipBtn">⬇ 녹음 파일 내려받기 (ZIP)</button>
+      </div>
+      <p class="muted">다시 보내기가 계속 안 되면 ZIP 파일을 내려받아 카톡으로 선생님께 보내 주세요.</p>` : `
+      <h2>📮 답변이 선생님께 전달됐어요</h2>
+      <p class="lead" style="margin-bottom:8px">발음·억양, 문항별 교정, 다음에 연습할 방법을 담은 <b>상세 피드백은 선생님이 직접 들어 본 뒤 카톡으로 보내드릴게요.</b></p>
+      ${grade && note ? `<p class="muted">${esc(note)}</p>`:""}
+      <p class="muted">답변 ${S.answers.filter(Boolean).length}문항 · 응시 시간 ${fmt((S.endAt-S.startAt)/1000)}</p>`}
+    <div class="actions"><button class="btn ghost" id="again">처음으로</button></div>
+  </section>`;
+  $("#again").onclick = () => location.reload();
+  if(submitError){
+    $("#zipBtn").onclick = downloadZip;
+    $("#retry").onclick = async () => {
+      $("#retry").disabled = true; $("#retry").innerHTML = '<span class="spin"></span>보내는 중…';
+      try{ await doSubmit(()=>{}); S.submitted = true; viewGradeOnly(fb, note); }
+      catch(e){ $("#retry").disabled = false; $("#retry").textContent = "다시 보내기"; alertModal("아직 보내지 못했어요", esc(e.message)); }
+    };
+  }
+  scrollTop();
+}
+
+function items(){
+  return S.questions.map((Q,i)=>{
+    const a = S.answers[i], f = fluency(a) || {};
+    return {n:i+1, type:TYPE_KR[Q.type]||Q.type, topic:Q.kr, q:Q.text,
+      transcript:(a?.transcript)||"", seconds:Math.round(a?.seconds||0), answered:!!a,
+      wpm:f.wpm??null, longPauses:f.longPauses??null, silencePct:f.silencePct??null, latency:f.latency??null, maxPause:f.maxPause??null};
+  }).filter(x=>x.answered);
+}
+function fluencySummary(){
+  const fs = S.answers.filter(Boolean).map(fluency);
+  const avg = k => { const v = fs.map(f=>f[k]).filter(x=>x!=null); return v.length ? Math.round(10*v.reduce((s,x)=>s+x,0)/v.length)/10 : null; };
+  return {wpm: avg("wpm")==null?null:Math.round(avg("wpm")), perMin: avg("perMin"), silencePct: avg("silencePct")==null?null:Math.round(avg("silencePct")),
+          latency: avg("latency"), longPauses: fs.reduce((s,f)=>s+(f.longPauses||0),0)};
+}
+function chip(label, val, unit, band){
+  const b = band ? band : null;
+  const cls = b ? b[1] : "";
+  return `<span class="fl ${cls}"><b>${label}</b> ${val==null?"-":val+unit}${b?` · ${b[0]}`:""}</span>`;
+}
+function fluencyChips(a){
+  const f = fluency(a); if(!f) return "";
+  return chip("말 속도", f.wpm, " WPM", BANDS.wpm(f.wpm)) +
+         chip("긴 멈춤", f.longPauses, "회", BANDS.perMin(f.perMin)) +
+         chip("침묵", f.silencePct, "%", BANDS.silencePct(f.silencePct)) +
+         chip("첫마디", f.latency, "초", BANDS.latency(f.latency));
+}
+
+function viewResult(){
+  const answered = S.answers.filter(Boolean);
+  const totalSec = answered.reduce((s,a)=>s+a.seconds,0);
+  const adjText = {"-1":"쉽게","0":"비슷하게","1":"어렵게"}[S.adjust];
+  app.innerHTML = `
+  <section class="card">
+    <div class="badge">시험 완료</div>
+    <h2 style="margin-top:10px">${esc(S.name)}님, 수고했어요! 👏</h2>
+    <p class="lead" style="margin:0">답변을 다시 들어 보고, 받아쓰기가 틀린 부분이 있으면 고친 뒤 AI 피드백을 받아 보세요.</p>
+    <div class="sum">
+      <div><b>답변 문항</b><span>${answered.length} / 15</span></div>
+      <div><b>총 답변 시간</b><span>${fmt(totalSec)}</span></div>
+      <div><b>문항당 평균</b><span>${fmt(answered.length? totalSec/answered.length : 0)}</span></div>
+      <div><b>자가평가 · 재조정</b><span>${S.level}단계 · ${adjText||"-"}</span></div>
+    </div>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="btn orange" id="aiBtn">✨ AI 피드백 받기</button>
+      <button class="btn" id="subBtn">📮 선생님께 제출</button>
+      <button class="btn ghost" id="zipBtn">⬇ 전체 다운로드 (ZIP)</button>
+    </div>
+  </section>
+  <section class="card" id="fluCard"></section>
+  <div id="fbTop"></div>
+  <section id="list"></section>
+  <div class="actions"><button class="btn ghost" id="again">처음부터 다시 응시</button></div>`;
+  renderList();
+  renderFluency();
+  $("#aiBtn").onclick = getFeedback;
+  $("#subBtn").onclick = submitToTeacher;
+  $("#zipBtn").onclick = downloadZip;
+  $("#again").onclick = () => { if(confirmReset()) location.reload(); };
+  if(S.feedback) renderFeedback();
+  scrollTop();
+}
+function confirmReset(){ return true; }
+
+function renderFluency(){
+  const s = fluencySummary();
+  const box = (label, val, unit, band, hint) => {
+    const b = band || ["",""];
+    return `<div class="${b[1]}"><small>${label}</small><strong>${val==null?"-":val+unit}</strong><em>${b[0]}</em><div class="muted" style="font-size:12px;margin-top:4px">${hint}</div></div>`;
+  };
+  $("#fluCard").innerHTML = `
+    <h2>🎙️ 유창성 지표</h2>
+    <p class="muted" style="margin:0">녹음 소리와 받아쓰기로 자동 계산한 값이에요. 발음이 정확한지는 판단하지 않고, <b>얼마나 막힘없이 말했는지</b>를 보여 줘요.</p>
+    <div class="flu">
+      ${box("평균 말 속도", s.wpm, " WPM", BANDS.wpm(s.wpm), "1분에 말한 단어 수 · 100 이상이면 자연스러운 편")}
+      ${box("긴 멈춤 (1.5초↑)", s.longPauses, "회", BANDS.perMin(s.perMin), `1분에 평균 ${s.perMin??"-"}회 · 1회 이하가 좋아요`)}
+      ${box("답변 중 침묵 비율", s.silencePct, "%", BANDS.silencePct(s.silencePct), "말하는 동안 조용했던 시간 · 20% 이하가 좋아요")}
+      ${box("첫마디까지", s.latency, "초", BANDS.latency(s.latency), "질문이 끝나고 말을 시작하기까지 · 3초 이내가 좋아요")}
+    </div>
+    <p class="muted" style="font-size:12px;margin:12px 0 0">※ 기준은 연습용 참고 눈금이에요(공식 OPIc 기준 아님). 받아쓰기를 고치면 말 속도가 다시 계산돼요. 주변 소음이 크면 멈춤이 적게 잡힐 수 있어요.</p>`;
+}
+
+function renderList(){
+  $("#list").innerHTML = S.questions.map((Q,i)=>{
+    const a = S.answers[i];
+    return `<div class="ans" id="ans${i}">
+      <div class="hd"><b>Q${i+1}</b><span class="badge">${TYPE_KR[Q.type]}</span>${Q.kr?`<span class="badge o">${Q.kr}</span>`:""}
+        ${a?`<span class="muted" style="margin-left:auto">${fmt(a.seconds)}</span>`:`<span class="muted" style="margin-left:auto">미응답</span>`}</div>
+      <div class="q">${esc(Q.text)} <button class="btn ghost sm" data-say="${i}" style="padding:4px 10px">🔊</button></div>
+      ${a?`<audio controls src="${a.url}"></audio>
+      <div class="fls" id="fl${i}">${fluencyChips(a)}</div>
+      <label class="muted">받아쓰기 (음성 인식이라 틀릴 수 있어요 — 직접 고쳐도 돼요)</label>
+      <textarea data-tr="${i}" placeholder="${SR?"인식된 내용이 없어요. 들은 대로 직접 입력해 주세요.":"이 브라우저는 받아쓰기를 지원하지 않아요. 내 답변을 직접 입력해 주세요."}">${esc(a.transcript)}</textarea>`:""}
+      <div class="fb" id="fb${i}"></div>
+    </div>`;
+  }).join("");
+  app.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(S.questions[+b.dataset.say].text));
+  app.querySelectorAll("[data-tr]").forEach(t=>t.oninput=()=>{
+    const i = +t.dataset.tr; S.answers[i].transcript = t.value;
+    $("#fl"+i).innerHTML = fluencyChips(S.answers[i]); renderFluency();
+  });
+}
+
+/* ========================================================= AI 피드백 */
+function buildPrompt(level, its){
+  return `당신은 ACTFL OPIc 공인 평가 기준을 잘 아는 영어 말하기 평가자이자, 인지언어학 기반으로 "왜 그렇게 말하는지"를 설명해 주는 원더스피크(WonderSpeak) 선생님입니다.
+아래는 한국인 성인 학습자가 OPIc 모의고사에서 한 답변을 음성 인식으로 받아쓴 것입니다. 받아쓰기 오류가 있을 수 있으니 명백한 인식 오류는 감점하지 말고, 발음은 평가할 수 없다는 점을 감안하세요.
+
+자가평가 단계: ${level}단계 (1~6)
+
+${its.map(it=>`[Q${it.n}] (${it.type}${it.topic?` · ${it.topic}`:""}) 답변 시간 ${it.seconds}초
+유창성 지표: 말 속도 ${it.wpm??"-"} WPM / 1.5초 이상 멈춤 ${it.longPauses??"-"}회 (가장 긴 멈춤 ${it.maxPause??"-"}초) / 침묵 비율 ${it.silencePct??"-"}% / 첫마디까지 ${it.latency??"-"}초
+질문: ${it.q}
+답변: ${it.transcript || "(받아쓰기 없음)"}`).join("\n\n")}
+
+평가 기준: 과제 수행(질문에 맞는 답, 묘사·서술·비교·문제 해결), 문장 구성(단문→복문→문단), 시제 정확성과 일관성, 어휘 다양성, 답변 길이와 구체성, 담화 연결(접속사·전환 표현), 유창성(위 지표 — 원어민 대화 속도는 대략 120~160 WPM, 잦은 긴 멈춤과 높은 침묵 비율은 문장을 머릿속으로 만들며 말한다는 신호).
+
+다음 JSON 형식으로만 답하세요. JSON 바깥에 다른 글을 쓰지 마세요. 설명은 모두 한국어로, 교정 문장과 추천 표현은 영어로 씁니다.
+{
+  "estimated_grade": "NL|NM|NH|IL|IM1|IM2|IM3|IH|AL 중 하나",
+  "grade_reason": "이 등급으로 본 이유 2~3문장",
+  "strengths": ["강점 2~3개"],
+  "weaknesses": ["약점 2~3개"],
+  "tense_check": "시제 사용 점검 2~3문장 (과거 경험 문항에서 과거 시제를 유지했는지 등)",
+  "fluency_comment": "유창성 지표 해석 2~3문장 (어떤 문항 유형에서 멈춤이 늘었는지, 받아쓰기에 보이는 반복·자기 수정 등)",
+  "next_steps": ["다음 등급으로 가기 위한 구체적인 연습 3개"],
+  "per_question": [
+    {"n": 1, "comment": "한두 문장 코멘트", "corrections": [{"before": "틀린 부분", "after": "고친 문장", "why": "짧은 이유"}], "better_expression": "이 답변에 넣으면 좋을 자연스러운 영어 한두 문장"}
+  ]
+}
+per_question에는 답변한 모든 문항을 넣고, corrections는 문항당 최대 2개까지만 쓰세요.`;
+}
+async function api(body){
+  const res = await fetch(CONFIG.SCRIPT_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({...body, code:S.code})});
+  const j = await res.json();
+  if(!j.ok) throw new Error(j.error||"서버 오류");
+  return j;
+}
+async function getFeedback(){
+  const its = items();
+  if(!its.length){ alertModal("답변이 없어요","답변한 문항이 있어야 피드백을 받을 수 있어요."); return; }
+  if(its.every(x=>!x.transcript.trim())){ alertModal("받아쓰기가 비어 있어요","각 문항 아래 칸에 내 답변을 입력한 뒤 다시 눌러 주세요."); return; }
+  if(!CONFIG.SCRIPT_URL){ promptModal(buildPrompt(S.level, its)); return; }
+  const b = $("#aiBtn"); b.disabled=true; b.innerHTML='<span class="spin"></span>AI가 답변을 읽는 중… (30초~1분)';
+  try{
+    const j = await api({action:"feedback", level:S.level, items:its});
+    S.feedback = j.feedback; renderFeedback();
+    b.innerHTML = "✨ 피드백 다시 받기";
+  }catch(e){
+    alertModal("AI 피드백을 받지 못했어요", esc(e.message)+"<br><br>대신 프롬프트를 복사해서 Claude에 붙여 넣을 수 있어요.");
+    b.innerHTML = "✨ AI 피드백 받기";
+  }finally{ b.disabled=false; }
+}
+function renderFeedback(){
+  const f = S.feedback; if(!f) return;
+  const li = a => (a||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+  $("#fbTop").innerHTML = `
+  <section class="card grade-card">
+    <div class="fb-grid">
+      <div>
+        <div class="muted" style="color:#9fb0c8">AI 예상 등급</div>
+        <div class="grade">${esc(f.estimated_grade||"-")}</div>
+        <p style="color:#dbe4f0;line-height:1.65;font-size:14px">${esc(f.grade_reason||"")}</p>
+        <p style="color:#8fa1ba;font-size:12px">※ 받아쓰기 기반 추정이라 발음·억양은 반영되지 않았어요. 실제 등급과 다를 수 있어요.</p>
+      </div>
+      <div>
+        <h3 style="margin-top:0">👍 강점</h3><ul>${li(f.strengths)}</ul>
+        <h3>🔧 보완할 점</h3><ul>${li(f.weaknesses)}</ul>
+      </div>
+    </div>
+    <h3>⏱ 시제 점검</h3><p style="color:#dbe4f0;line-height:1.65;font-size:14px;margin:0">${esc(f.tense_check||"")}</p>
+    ${f.fluency_comment?`<h3>🎙️ 유창성</h3><p style="color:#dbe4f0;line-height:1.65;font-size:14px;margin:0">${esc(f.fluency_comment)}</p>`:""}
+    <h3>🚀 다음 단계</h3><ul>${li(f.next_steps)}</ul>
+  </section>`;
+  (f.per_question||[]).forEach(p=>{
+    const box = $("#fb"+(p.n-1)); if(!box) return;
+    box.style.display="block";
+    box.innerHTML = `<b>💬 피드백</b><div>${esc(p.comment||"")}</div>
+      ${(p.corrections||[]).length?`<ul class="corr">${p.corrections.map(c=>`<li><del>${esc(c.before)}</del> → <ins>${esc(c.after)}</ins><br><span class="muted">${esc(c.why)}</span></li>`).join("")}</ul>`:""}
+      ${p.better_expression?`<div style="margin-top:8px"><b>✍ 이렇게 말해 보세요</b><br><i>${esc(p.better_expression)}</i></div>`:""}`;
+  });
+  $("#fbTop").scrollIntoView({behavior:"smooth"});
+}
+
+/* ========================================================= 제출 */
+function blobToBase64(blob){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]); r.onerror=rej; r.readAsDataURL(blob); });
+}
+const extOf = mime => mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
+function meta(){
+  return {name:S.name, contact:S.contact, level:S.level, adjust:S.adjust,
+    survey:{job:SURVEY.job[S.survey.job], student:SURVEY.student[S.survey.student], living:SURVEY.living[S.survey.living],
+      picks:[...S.survey.picks].map(id=>TOPICS[id]?.kr||id)},
+    startedAt:new Date(S.startAt).toISOString(), durationSec:Math.round((S.endAt-S.startAt)/1000), fluency:fluencySummary()};
+}
+// 제출: 폴더 만들기 → 녹음 업로드(실패 시 1회 재시도) → 마무리. 중간에 실패해도 다시 부르면 이어서 올려요.
+async function doSubmit(step){
+  const answered = S.answers.map((a,i)=>a?{a,i}:null).filter(Boolean);
+  S.sub = S.sub || {folderId:null, done:new Set()};
+  if(!S.sub.folderId){
+    step("제출 폴더 만드는 중…", 3);
+    const st = await api({action:"start", meta:meta()});
+    S.sub.folderId = st.folderId;
+  }
+  for(let k=0;k<answered.length;k++){
+    const {a,i} = answered[k];
+    if(S.sub.done.has(i)) continue;
+    step(`녹음 파일 보내는 중… (${k+1}/${answered.length})`, 5 + 85*(k/answered.length));
+    const body = {action:"audio", folderId:S.sub.folderId, name:`Q${String(i+1).padStart(2,"0")}.${extOf(a.mime)}`, mime:a.mime.split(";")[0], data:await blobToBase64(a.blob)};
+    try{ await api(body); } catch(e){ await new Promise(r=>setTimeout(r,1500)); await api(body); }
+    S.sub.done.add(i);
+  }
+  step("리포트 정리하는 중…", 95);
+  await api({action:"finish", folderId:S.sub.folderId, meta:meta(), items:items(), feedback:S.feedback||null});
+  step("완료!", 100);
+  return answered.length;
+}
+async function submitToTeacher(){
+  if(!CONFIG.SCRIPT_URL){
+    alertModal("제출 서버가 아직 연결되지 않았어요", "대신 <b>전체 다운로드 (ZIP)</b>을 눌러 파일을 저장한 뒤, 카카오톡 등으로 선생님께 보내 주세요.");
+    return;
+  }
+  openModal(`<h2>선생님께 제출하는 중</h2><p class="muted" id="subMsg">준비 중…</p><div class="bar"><i id="subBar"></i></div><p class="muted">창을 닫지 말고 잠시만 기다려 주세요.</p>`);
+  const step = (msg, pct) => { $("#subMsg").textContent = msg; $("#subBar").style.width = pct+"%"; };
+  try{
+    const n = await doSubmit(step);
+    openModal(`<h2>✅ 제출 완료</h2><p class="lead">녹음 ${n}개와 받아쓰기${S.feedback?", AI 피드백":""}이 선생님께 전달됐어요. 수고했어요!</p><div class="actions"><button class="btn" onclick="closeModal()">확인</button></div>`);
+    $("#subBtn").textContent = "✅ 제출 완료"; $("#subBtn").disabled = true;
+  }catch(e){
+    openModal(`<h2>제출하지 못했어요</h2><p class="lead">${esc(e.message)}</p><p class="muted">인터넷 연결을 확인하고 다시 시도하거나, ZIP으로 내려받아 선생님께 보내 주세요.</p><div class="actions"><button class="btn ghost" onclick="closeModal()">닫기</button></div>`);
+  }
+}
+
+/* ========================================================= ZIP 다운로드 */
+function reportText(){
+  const m = meta(), f = S.feedback;
+  let t = `${CONFIG.ACADEMY} OPIc 모의고사 결과\n이름: ${m.name}\n연락처/반: ${m.contact||"-"}\n응시일: ${new Date(S.startAt).toLocaleString("ko-KR")}\n자가평가: ${m.level}단계 / 재조정: ${{"-1":"쉽게","0":"비슷하게","1":"어렵게"}[m.adjust]}\n설문 선택: ${m.survey.picks.join(", ")}\n\n`;
+  const fs = fluencySummary();
+  t += `[유창성 지표] 평균 말 속도 ${fs.wpm??"-"} WPM · 긴 멈춤 ${fs.longPauses}회(분당 ${fs.perMin??"-"}회) · 침묵 ${fs.silencePct??"-"}% · 첫마디 ${fs.latency??"-"}초\n\n`;
+  if(f) t += `[AI 예상 등급] ${f.estimated_grade}\n${f.grade_reason}\n\n강점: ${(f.strengths||[]).join(" / ")}\n보완: ${(f.weaknesses||[]).join(" / ")}\n시제: ${f.tense_check}\n${f.fluency_comment?`유창성: ${f.fluency_comment}\n`:""}다음 단계: ${(f.next_steps||[]).join(" / ")}\n\n`;
+  items().forEach(it=>{
+    t += `----------------------------------------\nQ${it.n} (${it.type}${it.topic?" · "+it.topic:""}) ${fmt(it.seconds)}\n지표: ${it.wpm??"-"} WPM · 긴 멈춤 ${it.longPauses??"-"}회 · 침묵 ${it.silencePct??"-"}% · 첫마디 ${it.latency??"-"}초\n질문: ${it.q}\n답변: ${it.transcript||"(없음)"}\n`;
+    const p = f && (f.per_question||[]).find(x=>x.n===it.n);
+    if(p){ t += `피드백: ${p.comment}\n`; (p.corrections||[]).forEach(c=>t+=`  - ${c.before} → ${c.after} (${c.why})\n`); if(p.better_expression) t+=`추천 표현: ${p.better_expression}\n`; }
+    t += "\n";
+  });
+  return t;
+}
+async function downloadZip(){
+  if(!window.JSZip){ alertModal("다운로드 준비 실패","인터넷 연결을 확인한 뒤 새로고침 없이 다시 눌러 주세요."); return; }
+  const b = $("#zipBtn"); b.disabled=true; b.innerHTML='<span class="spin" style="border-color:#ccc;border-top-color:#333"></span>압축 중…';
+  const zip = new JSZip();
+  S.answers.forEach((a,i)=>{ if(a) zip.file(`Q${String(i+1).padStart(2,"0")}.${extOf(a.mime)}`, a.blob); });
+  zip.file("결과_리포트.txt", reportText());
+  const blob = await zip.generateAsync({type:"blob"});
+  const url = URL.createObjectURL(blob);
+  const d = new Date(S.startAt);
+  const a = document.createElement("a");
+  a.href = url; a.download = `OPIc모의고사_${S.name}_${d.getMonth()+1}월${d.getDate()}일.zip`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 30000);
+  b.disabled=false; b.innerHTML="⬇ 전체 다운로드 (ZIP)";
+}
+
+/* ========================================================= 모달 */
+function openModal(html){ $("#modal").innerHTML = html; $("#modalBg").style.display="flex"; }
+function closeModal(){ $("#modalBg").style.display="none"; }
+function alertModal(title, body){ openModal(`<h2>${title}</h2><p class="lead">${body}</p><div class="actions"><button class="btn" onclick="closeModal()">확인</button></div>`); }
+function promptModal(text){
+  openModal(`<h2>AI 피드백 프롬프트</h2>
+    <p class="lead">아래 내용을 복사해서 Claude(claude.ai)에 붙여 넣으면 같은 형식의 피드백을 받을 수 있어요.</p>
+    <textarea id="pt" readonly>${esc(text)}</textarea>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">닫기</button><button class="btn" id="cp">복사하기</button></div>`);
+  $("#cp").onclick = async () => {
+    try{ await navigator.clipboard.writeText(text); $("#cp").textContent="✓ 복사됨"; }
+    catch(e){ $("#pt").select(); document.execCommand("copy"); $("#cp").textContent="✓ 복사됨"; }
+  };
+}
+
+/* ========================================================= 시작 */
+if(!navigator.mediaDevices || !window.MediaRecorder){
+  app.innerHTML = `<section class="card"><h2>이 브라우저에서는 녹음을 할 수 없어요</h2><p class="lead">PC나 노트북의 Chrome 최신 버전으로 접속해 주세요.</p></section>`;
+} else viewIntro();
+window.addEventListener("beforeunload", e => { if(S.startAt && !S.finished){ e.preventDefault(); e.returnValue=""; } });
+</script>
+</body>
+</html>

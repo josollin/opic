@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WonderSpeak OPIc 모의고사</title>
+<title>원더스피크 OPIc 모의고사</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
@@ -32,7 +32,7 @@ p.lead{color:var(--sub);margin:0 0 20px;line-height:1.6}
 .hero{background:linear-gradient(135deg,var(--blue) 0%,#3b8cf7 60%,#5aa0ff 100%);color:#fff;border:none;position:relative;overflow:hidden}
 .hero h1{font-size:32px}
 .hero p{color:#e6f0ff;line-height:1.65;margin:0}
-.hero .blob{position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:var(--orange);opacity:.9}
+.hero .blob{position:absolute;right:-50px;top:-60px;width:220px;height:220px;border-radius:50%;background:#fff;opacity:.12}
 .hero .blob2{position:absolute;right:90px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:#fff;opacity:.15}
 .hero .tag{display:inline-block;background:rgba(255,255,255,.18);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:14px}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px;position:relative}
@@ -158,7 +158,7 @@ label.f{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
 </head>
 <body>
 <header class="top"><div class="in">
-  <div class="logo"><b>Wonder</b>Speak <span>OPIc</span> 모의고사</div>
+  <div class="logo"><b>원더스피크</b> <span>OPIc</span> 모의고사</div>
   <div class="spacer"></div>
   <div class="timer" id="timer">40:00</div>
 </div></header>
@@ -173,9 +173,9 @@ label.f{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
    ========================================================= */
 const CONFIG = {
   // Google Apps Script 웹 앱 URL. 비워 두면 AI 피드백은 "프롬프트 복사" 방식, 제출은 ZIP 다운로드 방식으로 동작합니다.
-  SCRIPT_URL: "https://script.google.com/macros/s/AKfycby46OHJQPPoWvWvcwVxbbXfjzdZ7yDFEPk5Z7__4_XBL0aXrrhFeST_hqrkYPo9ET8pkA/exec",
+  SCRIPT_URL: "",
   // Apps Script에 ACCESS_CODE를 설정했다면 true로 바꾸세요. 학생이 시작 화면에서 수강생 코드를 입력합니다.
-  ASK_CODE: true,
+  ASK_CODE: false,
   TOTAL_MINUTES: 40,
   ACADEMY: "WonderSpeak",
   // 시험이 끝난 뒤 학생에게 보여 줄 범위
@@ -511,12 +511,12 @@ function viewIntro(){
     <div style="position:relative">
       <span class="tag">실전과 같은 흐름 · 약 40분</span>
       <h1>OPIc 실전 모의고사</h1>
-      <p>실제 시험처럼 질문은 <b>소리로만</b> 나오고, 답변은 녹음됩니다.<br>시험이 끝나면 내 답변을 다시 듣고, AI 피드백을 받고, 선생님께 제출할 수 있어요.</p>
+      <p>실제 시험처럼 질문은 <b>소리로만</b> 나오고, 답변은 녹음됩니다.<br>시험이 끝나면 답변이 선생님께 자동으로 전달되고, 예상 등급을 바로 확인할 수 있어요.<br>상세 성적표는 선생님이 직접 들어 본 뒤 카톡으로 보내드려요.</p>
       <div class="steps">
         <div><b>STEP 1</b>Background Survey</div>
         <div><b>STEP 2</b>Self Assessment</div>
         <div><b>STEP 3</b>15문항 인터뷰</div>
-        <div><b>STEP 4</b>다시 듣기 · 피드백</div>
+        <div><b>STEP 4</b>예상 등급 확인</div>
       </div>
     </div>
   </section>
@@ -538,7 +538,7 @@ function viewIntro(){
     <div class="notice">
       <b>권장 환경:</b> PC 또는 노트북의 <b>Chrome 브라우저</b>, 조용한 곳, 이어폰 사용.<br>
       답변 녹음과 동시에 음성 인식(받아쓰기)이 진행돼요. Chrome이 아니면 녹음은 되지만 받아쓰기가 안 될 수 있어요.
-      ${SR ? "" : "<br><b style='color:#c0392b'>지금 브라우저는 음성 인식을 지원하지 않아요. AI 피드백을 받으려면 결과 화면에서 답변을 직접 입력해야 해요.</b>"}
+      ${SR ? "" : "<br><b style='color:#c0392b'>지금 브라우저는 음성 인식을 지원하지 않아요. 녹음은 그대로 선생님께 전달되지만, 예상 등급이 바로 나오지 않을 수 있어요.</b>"}
     </div>
     <div class="actions"><button class="btn" id="go" disabled>마이크를 켜면 시작할 수 있어요</button></div>
   </section>`;

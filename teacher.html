@@ -261,7 +261,8 @@ async function openSubmission(id){
     const t = d.teacher || {};
     CUR = {
       id, data:d, files:j.files, sheet:sh, dirty:false,
-      grade: t.grade || sh.tgrade || (fb&&fb.estimated_grade) || "",
+      grade: t.grade || sh.tgrade || "",
+      gradeManual: !!t.gradeManual,
       scores: t.scores || (sh.scores||[]).map(x=>x?Number(x):0),
       autoFlu: false,
       memo: t.memo ?? sh.memo ?? "",
@@ -273,8 +274,44 @@ async function openSubmission(id){
     };
     // 채점이 비어 있으면 유창성은 자동 지표로 먼저 채워 둬요 (선생님이 바꿀 수 있어요)
     if(!CUR.scores.some(Boolean)){ const f = suggestFluency(d.meta?.fluency); if(f){ CUR.scores[2] = f; CUR.autoFlu = true; } }
+    if(!CUR.gradeManual) CUR.grade = finalGrade();
     renderDetail(); renderList();
+    // AI 결과가 없고 받아쓰기가 있으면 열자마자 AI 분석을 자동으로 돌려요
+    if(!fb && (d.items||[]).some(x=>String(x.transcript||"").trim())) reAnalyze(true);
   }catch(e){ $("#detail").innerHTML = `<div class="empty">불러오지 못했어요: ${esc(e.message)}</div>`; }
+}
+/* ---------- 종합 예상 등급 자동 계산 ----------
+   기준 등급: AI 예상 등급 (없으면 답변 길이·말하기 흐름으로 추정)
+   + 선생님 채점 평균으로 조정: 4.5↑ 한 단계 올림 / 2.5↓ 한 단계 내림 / 1.5↓ 두 단계 내림 */
+const wc = t => (String(t||"").match(/[A-Za-z][A-Za-z'’-]*/g)||[]).length;
+function estimateGrade(its, fl, level){
+  const ans = (its||[]); if(!ans.length) return null;
+  const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
+  const words = ans.map(x=>wc(x.transcript)); let idx;
+  if(words.some(w=>w>0)){ const aw = mean(words); idx = aw<10?0 : aw<20?1 : aw<35?2 : aw<50?3 : aw<70?4 : aw<95?5 : aw<120?6 : aw<160?7 : 8; }
+  else { const sec = mean(ans.map(x=>x.seconds||0)); idx = sec<10?1 : sec<20?2 : sec<35?3 : sec<50?4 : sec<70?5 : sec<90?6 : sec<120?7 : 8; }
+  if(fl){ if(fl.wpm!=null){ if(fl.wpm<70) idx--; else if(fl.wpm>=120) idx++; } if(fl.perMin!=null && fl.perMin>3) idx--; }
+  if(ans.length<10) idx--;
+  const cap = level<=2 ? 4 : level<=4 ? 7 : 8;
+  return GRADES[Math.max(0, Math.min(cap, idx))];
+}
+function baseGrade(){
+  const d = CUR.data, m = d.meta||{};
+  return d.feedback?.estimated_grade || m.estGrade || estimateGrade(d.items, m.fluency, m.level);
+}
+function finalGrade(){
+  const b = baseGrade(); if(!b) return "";
+  let idx = GRADES.indexOf(b); if(idx<0) return b;
+  const sc = CUR.scores.filter(Boolean);
+  if(sc.length >= 2){ const r = sc.reduce((s,x)=>s+x,0)/sc.length;
+    if(r>=4.5) idx++; else if(r<=1.5) idx-=2; else if(r<=2.5) idx--; }
+  return GRADES[Math.max(0, Math.min(8, idx))];
+}
+function gradeNote(){
+  const d = CUR.data, b = baseGrade();
+  const src = d.feedback?.estimated_grade ? "AI 예상 등급" : "답변 길이·말하기 흐름 추정";
+  const sc = CUR.scores.filter(Boolean);
+  return `${src} ${b||"-"}${sc.length>=2?` + 선생님 채점 평균 ${(sc.reduce((s,x)=>s+x,0)/sc.length).toFixed(1)}점`:""} → <b>${finalGrade()||"-"}</b>`;
 }
 function suggestFluency(fl){
   if(!fl || fl.wpm==null) return 0;
@@ -320,15 +357,16 @@ function renderDetail(){
     <h2>① 판정과 채점</h2>
     <div class="grid2">
       <div class="grade-box">
-        <small>AI 예상 등급 (학생에게 이미 보인 등급)</small>
-        <div class="g">${esc(fb?.estimated_grade||"-")}</div>
+        <small>${fb?"AI 예상 등급":"자동 추정 등급"} (학생에게 이미 보인 등급)</small>
+        <div class="g">${esc(fb?.estimated_grade||m.estGrade||"-")}</div>
         <p style="font-size:13px;color:#dbe4f0;line-height:1.6;margin:6px 0 0">${esc(fb?.grade_reason||"AI 분석이 없어요. 받아쓰기를 확인하고 ④의 [AI 다시 분석]을 눌러 주세요.")}</p>
         ${!fb && m.aiError?`<p style="font-size:12px;color:#ffb4b4;margin:8px 0 0">실패 이유: ${esc(m.aiError)}</p>`:""}
         ${fb?.partial_error?`<p style="font-size:12px;color:#ffd6a8;margin:8px 0 0">${esc(fb.partial_error)} [AI 다시 분석]으로 다시 받을 수 있어요.</p>`:""}
       </div>
       <div>
-        <h3 style="margin-top:0">선생님 판정 등급 <span class="muted">(카톡에 이 등급이 들어가요)</span></h3>
+        <h3 style="margin-top:0">종합 예상 등급 <span class="muted">(성적표에 이 등급이 들어가요)</span></h3>
         <select id="grade"><option value="">선택</option>${GRADES.map(g=>`<option ${C.grade===g?"selected":""}>${g}</option>`).join("")}</select>
+        <p class="muted" id="gNote" style="margin:6px 0 0">${C.gradeManual?`✋ 선생님이 직접 정한 등급이에요 · <a href="#" id="gAuto">자동 계산으로 되돌리기</a>`:`🤖 자동 계산: ${gradeNote()}`}</p>
         <h3>선생님 한마디 <span class="muted">(카톡 메시지에 그대로 들어가요)</span></h3>
         <textarea id="memo" rows="4" placeholder="예) 롤플레이에서 질문을 자연스럽게 이어 가는 게 정말 좋아졌어요! 다음엔 과거 경험 이야기를 끝까지 과거형으로 말하는 데만 집중해 봐요.">${esc(C.memo)}</textarea>
       </div>
@@ -364,6 +402,7 @@ function renderDetail(){
       <h2 style="margin:0">④ 문항별 확인</h2><span class="spacer"></span>
       <button class="btn ghost sm" id="reAI">🔄 고친 받아쓰기로 AI 다시 분석</button>
     </div>
+    ${!(d.items||[]).some(x=>String(x.transcript||"").trim()) ? `<div style="background:#fdecec;color:#8a1f22;border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.6;margin-bottom:10px">⚠️ 이 제출은 <b>받아쓰기가 비어 있어서</b> AI가 문장 교정을 만들 수 없어요. 학생이 Chrome이 아닌 브라우저를 썼거나 음성 인식이 막혀 있었을 수 있어요.<br>녹음을 들으며 몇 문항만 받아쓰기 칸에 입력하고 <b>[AI 다시 분석]</b>을 누르면 교정과 표현이 채워져요.</div>` : ""}
     <p class="muted" style="margin-top:0">녹음을 들으면서 받아쓰기가 틀렸으면 고치고, 성적표에 넣을 교정을 골라 주세요. <span class="limit">교정은 최대 3개</span></p>
     ${(d.items||[]).map((it,idx)=>renderQ(it,idx)).join("")}
   </section>
@@ -422,11 +461,13 @@ function renderQ(it, idx){
 
 function bindDetail(){
   const C = CUR;
-  $("#grade").onchange = e => { C.grade = e.target.value; dirty(); };
+  $("#grade").onchange = e => { C.grade = e.target.value; C.gradeManual = true; dirty(); keepScroll(renderDetail); };
+  if($("#gAuto")) $("#gAuto").onclick = e => { e.preventDefault(); C.gradeManual = false; C.grade = finalGrade(); dirty(); keepScroll(renderDetail); };
   $("#memo").oninput = e => { C.memo = e.target.value; dirty(); };
   $("#sign").oninput = e => { C.sign = e.target.value; store.set("opic_sign", C.sign); };
   root.querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{
     const i=+b.dataset.sc, v=+b.dataset.v; C.scores[i] = C.scores[i]===v?0:v; if(i===2) C.autoFlu = false;
+    if(!C.gradeManual){ C.grade = finalGrade(); $("#grade").value = C.grade; $("#gNote").innerHTML = `🤖 자동 계산: ${gradeNote()}`; }
     root.querySelectorAll(`[data-sc="${i}"]`).forEach(x=>x.classList.toggle("on", +x.dataset.v===C.scores[i])); dirty();
   });
   const target = (key,i) => (key==="tense"||key==="fluency") ? C.lists[key] : C.lists[key][i];
@@ -442,7 +483,7 @@ function bindDetail(){
   $("#addW").onclick = () => { C.lists.weaknesses.push({text:"",on:true}); dirty(); keepScroll(renderDetail); };
   $("#addN").onclick = () => { C.lists.next.push({text:"",on:true}); dirty(); keepScroll(renderDetail); };
   root.querySelectorAll("[data-play]").forEach(b=>b.onclick=()=>playAudio(+b.dataset.play, b.dataset.fid));
-  $("#reAI").onclick = reAnalyze;
+  $("#reAI").onclick = () => reAnalyze(false);
   $("#build").onclick = () => makeCard();
   $("#msg").oninput = e => { C.message = e.target.value; dirty(); };
   $("#copyMsg").onclick = copyMsg;
@@ -473,17 +514,19 @@ async function playAudio(idx, fid){
   }catch(e){ box.innerHTML = `<span class="muted" style="color:var(--red)">불러오지 못했어요: ${esc(e.message)}</span>`; }
 }
 
-async function reAnalyze(){
+async function reAnalyze(auto){
   const C = CUR;
-  if(!await confirmBox("고친 받아쓰기로 AI 분석을 다시 할까요? 지금 골라 둔 총평·교정 선택은 새 분석 결과로 바뀌어요. (선생님 점수·한마디·문항 메모는 유지돼요)")) return;
-  const b = $("#reAI"); b.disabled = true; b.innerHTML = '<span class="spin"></span>분석 중… (30초~1분)';
+  if(!auto && !await confirmBox("고친 받아쓰기로 AI 분석을 다시 할까요? 지금 골라 둔 총평·교정 선택은 새 분석 결과로 바뀌어요. (선생님 점수·한마디·문항 메모는 유지돼요)")) return;
+  const b = $("#reAI"); b.disabled = true; b.innerHTML = '<span class="spin"></span>AI가 교정·표현 피드백을 만드는 중… (30초~1분)';
+  if(auto) toast("AI 분석 결과가 없어서 지금 자동으로 분석하고 있어요");
   try{
     const j = await api({action:"feedback", level:C.data.meta?.level, items:C.data.items});
     C.data.feedback = j.feedback; C.lists = listsFromFeedback(j.feedback);
-    if(!C.grade) C.grade = j.feedback.estimated_grade || "";
+    if(CUR!==C) return;   // 기다리는 동안 다른 학생으로 넘어갔으면 화면은 그대로
+    if(!C.gradeManual) C.grade = finalGrade();
     await save(true);
-    keepScroll(renderDetail); toast("새 분석 결과로 바꿨어요");
-  }catch(e){ toast("분석 실패: "+e.message); b.disabled=false; b.textContent="🔄 고친 받아쓰기로 AI 다시 분석"; }
+    keepScroll(renderDetail); toast("AI가 교정·표현 피드백을 채웠어요");
+  }catch(e){ if(CUR===C){ toast("분석 실패: "+e.message); b.disabled=false; b.textContent="🔄 고친 받아쓰기로 AI 다시 분석"; } }
 }
 
 /* ========================================================= 성적표 */
@@ -586,7 +629,7 @@ async function save(silent, withPng){
   $("#saveState").innerHTML = '<span class="spin"></span>저장 중';
   try{
     await api({action:"t_save", id:C.id,
-      teacher:{grade:C.grade, scores:C.scores, memo:C.memo, lists:C.lists, qmemo:C.qmemo, updatedAt:new Date().toISOString()},
+      teacher:{grade:C.grade, gradeManual:C.gradeManual, scores:C.scores, memo:C.memo, lists:C.lists, qmemo:C.qmemo, updatedAt:new Date().toISOString()},
       items: C.trEdited ? C.data.items : undefined,
       feedback: C.data.feedback,
       message: C.message, sent: C.sent, reportPng});

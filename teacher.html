@@ -132,6 +132,23 @@ audio{width:100%;margin:6px 0}
 .rc-ft img{height:24px;max-width:150px;object-fit:contain;display:block;margin:0 auto 8px}
 .preview-img{width:100%;border-radius:14px;border:1px solid var(--line);display:block}
 .limit{font-size:12px;color:#9a5a12;background:#fff4e5;border-radius:8px;padding:3px 8px;margin-left:6px;font-weight:600}
+.del{border:none;background:none;color:#9aa5b4;font-size:14px;padding:2px 4px;border-radius:6px;line-height:1}
+.del:hover{background:#fdecec;color:var(--red)}
+details.ph{margin:6px 0 4px 28px}
+details.ph summary{cursor:pointer;font-size:13px;color:var(--blue);font-weight:700;list-style:none;padding:4px 0}
+details.ph summary::-webkit-details-marker{display:none}
+.phl{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.phc{border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 10px;font-size:13px;line-height:1.45;text-align:left;max-width:100%}
+.phc:hover{border-color:var(--blue);background:var(--blue-l)}
+.phc.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.phc.mine{border-style:dashed}
+.phc .x{margin-left:6px;color:#9aa5b4;font-weight:700}
+.phc .x:hover{color:var(--red)}
+.phadd{display:flex;gap:6px}
+.phadd .inp{padding:7px 10px;font-size:13px}
+.phadd .btn{white-space:nowrap;flex:none}
+.qlabel{font-size:12.5px;font-weight:700;color:var(--sub);margin:10px 0 4px}
+.qfb textarea,.qfb .inp{background:var(--blue-l);border-color:#cfe0fb}
 .sticky-bar{position:fixed;bottom:0;left:300px;right:0;background:#fff;border-top:1px solid var(--line);padding:10px 26px;display:flex;gap:8px;align-items:center;z-index:4}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:30}
 .toast.on{opacity:1}
@@ -178,6 +195,57 @@ const RUBRIC = [
 ];
 const GRADES = ["NL","NM","NH","IL","IM1","IM2","IM3","IH","AL"];
 
+/* 자주 쓰는 문장 (기본 제공). 검토실에서 저장한 '우리 문장'은 스프레드시트 '문장모음' 시트에 함께 쌓여요 */
+const PRESETS = {
+  strengths:[
+    "질문의 핵심에 먼저 답하고 자세한 내용을 덧붙이는 흐름이 좋아요.",
+    "구체적인 예시와 장면 묘사로 답변이 생생했어요.",
+    "과거 경험을 처음-중간-끝 순서로 자연스럽게 이어 갔어요.",
+    "답변 길이가 충분하고 끝까지 말을 이어 가려는 태도가 좋았어요.",
+    "because, so, but 같은 연결어로 문장을 자연스럽게 이었어요.",
+    "롤플레이에서 질문을 다양한 형태로 바꿔 가며 물어봤어요.",
+    "문제 상황을 설명하고 대안을 제시하는 구조가 깔끔했어요.",
+    "감정과 이유를 함께 말해서 답변에 설득력이 있었어요.",
+    "발음이 또렷해서 알아듣기 쉬웠어요.",
+    "말하는 속도가 안정적이고 자신감 있게 들렸어요.",
+    "비교 질문에서 과거와 현재의 차이를 분명하게 대비했어요.",
+    "어휘 선택이 다양하고 같은 단어 반복이 적었어요."],
+  weaknesses:[
+    "과거 경험을 말할 때 현재형으로 돌아가는 경우가 있어요.",
+    "관사(a/the)와 복수형(-s)이 자주 빠져요.",
+    "문장이 짧게 끊겨서 나열처럼 들려요. 연결어를 더 써 보세요.",
+    "답변이 짧은 편이에요. 이유와 예시를 하나씩 더 붙여 보세요.",
+    "문장 중간에 멈추는 일이 많아요. 의미 덩어리(chunk) 단위로 말하는 연습이 필요해요.",
+    "very, good, so 같은 단어를 반복해서 써요.",
+    "질문의 일부에만 답하고 나머지 질문을 놓쳤어요.",
+    "롤플레이에서 질문 개수가 부족했어요. 3~4개를 물어봐야 해요.",
+    "문제 해결 롤플레이에서 대안 제시가 빠졌어요.",
+    "마무리 없이 답변이 끝나요. 정리하는 한 문장을 넣어 보세요.",
+    "주어와 동사의 수 일치(he goes / they go)가 흔들려요.",
+    "um, uh 같은 망설임 소리가 많아요. Well, Let me think 같은 표현으로 바꿔 보세요."],
+  tense:[
+    "과거 이야기는 처음부터 끝까지 과거형으로! 'Last year'로 시작했다면 동사도 계속 과거형이어야 해요.",
+    "지금까지 이어지는 경험은 현재완료로 말하면 자연스러워요. 예) I've been living in Busan for five years.",
+    "습관은 현재형, 그 습관이 시작된 계기는 과거형으로 나눠서 말해 보세요.",
+    "과거에 반복하던 습관은 used to / would로 표현해 보세요. 예) I used to go there every weekend.",
+    "비교 질문에서는 과거(used to)와 현재(these days)를 대비하면 시제 구분이 분명해져요.",
+    "미래 계획은 be going to / I'm planning to로 말해 보세요."],
+  next:[
+    "과거 경험 질문 3개를 골라 시제만 체크하며 다시 녹음해 보기",
+    "답변마다 '이유 + 예시 + 느낌' 3단 구조로 말해 보기",
+    "When I was… / After that… / In the end… 로 4문장 이상 이어 말하기",
+    "롤플레이 질문 패턴 4개 미리 준비하기 (Do you…? / How much…? / Is there…? / Can I…?)",
+    "1분 타이머를 켜고 멈추지 않고 말하는 연습하기",
+    "녹음을 들으며 a/the와 -s를 빠뜨린 곳 표시해 보기",
+    "돌발 주제(재활용·날씨·인터넷 등) 묘사 답변을 2개씩 준비하기",
+    "비교·변화 표현(Compared to… / These days… / used to…) 익히기",
+    "자주 쓰는 형용사를 대신할 표현 5개씩 정리하기",
+    "같은 질문에 2분 동안 답하는 연습으로 답변 길이 늘리기"]
+};
+const CAT_KR = {strengths:"잘한 점", weaknesses:"보완할 점", tense:"시제 포인트", next:"다음 연습"};
+let MINE = [];   // 우리 문장 [{cat, text}]
+async function loadPhrases(){ try{ const j = await api({action:"t_phrases"}); MINE = j.rows||[]; }catch(e){ MINE = []; } }
+
 const $ = s => document.querySelector(s);
 const root = $("#root");
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -217,6 +285,7 @@ async function loadList(){ const j = await api({action:"t_list"}); LIST = j.rows
 
 /* ========================================================= 목록 */
 function viewMain(){
+  loadPhrases();
   $("#logout").style.display="";
   $("#logout").onclick = () => { store.del("opic_tcode"); TCODE=""; viewLogin(); };
   root.innerHTML = `<div class="layout">
@@ -245,10 +314,22 @@ function renderList(){
     <div class="item ${CUR&&CUR.id===r.id?"on":""}" data-id="${esc(r.id)}">
       <div class="r1"><span class="nm">${esc(r.name)}</span><span class="spacer"></span>
         ${r.tgrade||r.ai?`<span class="pill g">${esc(r.tgrade||r.ai)}</span>`:""}
-        <span class="pill ${r.sent?"sent":"todo"}">${r.sent?"발송완료":"미발송"}</span></div>
+        <span class="pill ${r.sent?"sent":"todo"}">${r.sent?"발송완료":"미발송"}</span>
+        <button class="del" data-del="${esc(r.id)}" title="이 제출 삭제">🗑</button></div>
       <div class="r2">${esc(r.time)} · ${esc(r.level)} · ${esc(r.answered)}${r.contact?` · ${esc(r.contact)}`:""}</div>
     </div>`).join("") : `<div class="empty" style="padding:30px 0">${FILTER==="todo"?"미발송 제출이 없어요 🎉":"제출이 없어요"}</div>`;
   root.querySelectorAll(".item").forEach(el=>el.onclick=()=>openSubmission(el.dataset.id));
+  root.querySelectorAll("[data-del]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); deleteSubmission(b.dataset.del); });
+}
+async function deleteSubmission(id){
+  const r = LIST.find(x=>x.id===id);
+  if(!await confirmBox(`${r?r.name+" 학생의 ":""}제출을 삭제할까요?\n목록과 시트에서 지워지고, 녹음·리포트 폴더는 Google Drive 휴지통으로 이동해요(30일 안에는 Drive 휴지통에서 복구할 수 있어요).`)) return;
+  try{
+    await api({action:"t_delete", id});
+    LIST = LIST.filter(x=>x.id!==id);
+    if(CUR && CUR.id===id){ CUR = null; $("#detail").innerHTML = `<div class="empty">삭제했어요. 왼쪽에서 다른 학생을 골라 주세요.</div>`; }
+    renderList(); toast("삭제했어요");
+  }catch(e){ toast("삭제 실패: "+e.message); }
 }
 
 /* ========================================================= 상세 */
@@ -268,6 +349,7 @@ async function openSubmission(id){
       memo: t.memo ?? sh.memo ?? "",
       sign: store.get("opic_sign", CONFIG.DEFAULT_SIGN),
       lists: t.lists || listsFromFeedback(fb),
+      openPh: new Set(),
       qmemo: t.qmemo || {},
       message: sh.message || "",
       sent: !!sh.sent
@@ -275,6 +357,7 @@ async function openSubmission(id){
     // 채점이 비어 있으면 유창성은 자동 지표로 먼저 채워 둬요 (선생님이 바꿀 수 있어요)
     if(!CUR.scores.some(Boolean)){ const f = suggestFluency(d.meta?.fluency); if(f){ CUR.scores[2] = f; CUR.autoFlu = true; } }
     if(!CUR.gradeManual) CUR.grade = finalGrade();
+    if(!CUR.lists.qfb) CUR.lists.qfb = listsFromFeedback(fb).qfb;   // 예전에 저장된 제출 호환
     renderDetail(); renderList();
     // AI 결과가 없고 받아쓰기가 있으면 열자마자 AI 분석을 자동으로 돌려요
     if(!fb && (d.items||[]).some(x=>String(x.transcript||"").trim())) reAnalyze(true);
@@ -331,6 +414,7 @@ function listsFromFeedback(fb){
     strengths: mk(fb.strengths,2), weaknesses: mk(fb.weaknesses,2), next: mk(fb.next_steps,3),
     tense: {text:fb.tense_check||"", on:!!fb.tense_check}, fluency: {text:fb.fluency_comment||"", on:false},
     better: (fb.per_question||[]).filter(p=>p.better_expression).map(p=>({n:p.n, text:p.better_expression, on:false})),
+    qfb: Object.fromEntries((fb.per_question||[]).map(p=>[p.n, {comment:p.comment||"", better:p.better_expression||""}])),
     corr
   };
 }
@@ -347,7 +431,7 @@ function renderDetail(){
     </div>`;
   $("#detail").innerHTML = `
   <section class="card">
-    <h1>${esc(m.name)}</h1>
+    <div style="display:flex;align-items:center;gap:10px"><h1 style="margin:0">${esc(m.name)}</h1><span class="spacer"></span><button class="btn ghost sm" id="delCur">🗑 이 제출 삭제</button></div>
     <div class="meta"><span>응시 <b>${esc(date)}</b></span><span>연락처/반 <b>${esc(m.contact||"-")}</b></span><span>자가평가 <b>${m.level||"-"}단계</b> · 재조정 <b>${adj}</b></span><span>답변 <b>${(d.items||[]).length}/15</b></span></div>
     <div class="meta"><span>설문: ${esc((m.survey?.picks||[]).join(", "))}</span></div>
     <div class="links" style="margin-top:10px">${C.sheet.report?`<a href="${esc(C.sheet.report)}" target="_blank">📄 리포트 문서</a>`:""}${C.sheet.folder?`<a href="${esc(C.sheet.folder)}" target="_blank">📁 녹음 폴더</a>`:""}</div>
@@ -390,10 +474,10 @@ function renderDetail(){
   <section class="card">
     <h2>③ 성적표에 넣을 총평 고르기</h2>
     <p class="muted" style="margin-top:-6px">체크한 항목만 성적표에 들어가요. 문장은 직접 고쳐도 돼요. 한 장에 깔끔하게 담기도록 짧게 다듬는 걸 권해요.</p>
-    <h3>👍 잘한 점 <span class="limit">성적표에는 최대 2개</span></h3>${L.strengths.map((x,i)=>pickRow("strengths",i,x)).join("")||'<p class="muted">없음</p>'}
-    <h3>🔧 보완할 점 <span class="limit">최대 2개</span></h3>${L.weaknesses.map((x,i)=>pickRow("weaknesses",i,x)).join("")||'<p class="muted">없음</p>'}
-    <h3>⏱ 시제 포인트 <span class="limit">짧게 두세 문장</span></h3>${pickRow("tense",0,L.tense,true)}
-    <h3>📚 다음 연습 <span class="limit">최대 3개</span></h3>${L.next.map((x,i)=>pickRow("next",i,x)).join("")||'<p class="muted">없음</p>'}
+    <h3>👍 잘한 점 <span class="limit">성적표에는 체크한 것 중 앞의 2개</span></h3>${L.strengths.map((x,i)=>pickRow("strengths",i,x)).join("")||'<p class="muted">없음</p>'}${phrasePanel("strengths")}
+    <h3>🔧 보완할 점 <span class="limit">앞의 2개</span></h3>${L.weaknesses.map((x,i)=>pickRow("weaknesses",i,x)).join("")||'<p class="muted">없음</p>'}${phrasePanel("weaknesses")}
+    <h3>⏱ 시제 포인트 <span class="limit">짧게 두세 문장</span></h3>${pickRow("tense",0,L.tense,true)}${phrasePanel("tense")}
+    <h3>📚 다음 연습 <span class="limit">앞의 3개</span></h3>${L.next.map((x,i)=>pickRow("next",i,x)).join("")||'<p class="muted">없음</p>'}${phrasePanel("next")}
     <div style="margin-top:10px"><button class="btn ghost sm" id="addS">+ 잘한 점 추가</button> <button class="btn ghost sm" id="addW">+ 보완할 점 추가</button> <button class="btn ghost sm" id="addN">+ 다음 연습 추가</button></div>
   </section>
 
@@ -438,11 +522,22 @@ function renderDetail(){
   </div>`;
   bindDetail();
 }
+function phrasePanel(cat){
+  const C = CUR, L = C.lists;
+  const has = t => cat==="tense" ? (L.tense.on && L.tense.text.trim()===t) : L[cat].some(x=>x.on && x.text.trim()===t);
+  const chip = (t, mine) => `<button class="phc ${has(t)?"on":""} ${mine?"mine":""}" data-ph="${cat}" data-t="${esc(t)}">${has(t)?"✓ ":""}${esc(t)}${mine?`<span class="x" data-phdel="${cat}" data-t="${esc(t)}" title="우리 문장에서 삭제">×</span>`:""}</button>`;
+  const mine = MINE.filter(x=>x.cat===cat).map(x=>x.text);
+  return `<details class="ph" data-cat="${cat}" ${C.openPh.has(cat)?"open":""}><summary>📚 자주 쓰는 문장에서 고르기 (${PRESETS[cat].length + mine.length})</summary>
+    <div class="phl">${mine.map(t=>chip(t,true)).join("")}${PRESETS[cat].map(t=>chip(t,false)).join("")}</div>
+    <div class="phadd"><input class="inp" data-phnew="${cat}" placeholder="자주 쓰는 ${CAT_KR[cat]} 문장을 '우리 문장'으로 저장해 두기"><button class="btn ghost sm" data-phsave="${cat}">저장</button></div>
+  </details>`;
+}
 function renderQ(it, idx){
   const C = CUR;
   const corr = C.lists.corr.map((c,k)=>({c,k})).filter(x=>x.c.n===it.n);
   const better = C.lists.better.map((b,k)=>({b,k})).filter(x=>x.b.n===it.n);
   const p = (C.data.feedback?.per_question||[]).find(x=>Number(x.n)===it.n);
+  const qf = (C.lists.qfb||{})[it.n] || {};
   const file = C.files.find(f=>f.name.startsWith("Q"+String(it.n).padStart(2,"0")+"."));
   return `<div class="q">
     <div class="hd"><b>Q${it.n}</b><span class="badge">${esc(it.type)}</span>${it.topic?`<span class="badge o">${esc(it.topic)}</span>`:""}<span class="spacer"></span><span class="muted">${it.seconds}초</span></div>
@@ -450,11 +545,17 @@ function renderQ(it, idx){
     <div class="qt">${esc(it.q)}</div>
     ${file?`<div id="au${idx}"><button class="btn ghost sm" data-play="${idx}" data-fid="${esc(file.id)}">▶ 녹음 듣기</button></div>`:`<p class="muted">녹음 파일 없음</p>`}
     <textarea rows="3" data-tr="${idx}" placeholder="받아쓰기 없음 — 들은 대로 입력하면 AI 다시 분석에 쓰여요">${esc(it.transcript)}</textarea>
-    ${p?`<div class="ai"><b>AI 코멘트</b> ${esc(p.comment||"")}</div>`:""}
-    ${corr.map(({c,k})=>`<div class="pick ${c.on?"":"off"}"><input type="checkbox" data-pk="corr" data-i="${k}" ${c.on?"checked":""}>
-      <div class="corr"><input class="inp before" data-cf="before" data-i="${k}" value="${esc(c.before)}"><input class="inp after" data-cf="after" data-i="${k}" value="${esc(c.after)}"><input class="inp why" data-cf="why" data-i="${k}" value="${esc(c.why)}" placeholder="이유"></div></div>`).join("")}
-    ${better.map(({b})=>`<div class="muted" style="margin:6px 0">💬 추천 표현: ${esc(b.text)}</div>`).join("")}
-    <div style="margin-top:8px"><button class="btn ghost sm" data-addc="${it.n}">+ 교정 추가</button></div>
+    <div class="qfb">
+      <div class="qlabel">🤖 AI 피드백 <span style="font-weight:400">(자유롭게 고칠 수 있어요)</span></div>
+      <textarea rows="2" data-qc="${it.n}" placeholder="${p?"":"AI 피드백이 아직 없어요. 직접 쓰거나 [AI 다시 분석]을 눌러 주세요."}">${esc(qf.comment||"")}</textarea>
+      <div class="qlabel">✏️ 문장 교정 <span style="font-weight:400">(체크한 교정이 성적표에 들어가요 · 전체 최대 3개)</span></div>
+      ${corr.map(({c,k})=>`<div class="pick ${c.on?"":"off"}"><input type="checkbox" data-pk="corr" data-i="${k}" ${c.on?"checked":""}>
+        <div class="corr"><input class="inp before" data-cf="before" data-i="${k}" value="${esc(c.before)}" placeholder="학생이 말한 문장"><input class="inp after" data-cf="after" data-i="${k}" value="${esc(c.after)}" placeholder="고친 문장"><input class="inp why" data-cf="why" data-i="${k}" value="${esc(c.why)}" placeholder="이유"></div>
+        <button class="del" data-cdel="${k}" title="이 교정 지우기" style="margin-top:8px">✕</button></div>`).join("") || `<p class="muted" style="margin:4px 0">교정할 문장이 없어요.</p>`}
+      <div style="margin-top:6px"><button class="btn ghost sm" data-addc="${it.n}">+ 교정 추가</button></div>
+      <div class="qlabel">💬 추천 표현</div>
+      <input class="inp" data-qb="${it.n}" value="${esc(qf.better||"")}" placeholder="이 답변에 넣으면 좋을 자연스러운 영어 표현">
+    </div>
     <textarea rows="2" data-qm="${it.n}" placeholder="문항 메모 (내부 기록용 · 성적표에는 안 들어가요)" style="margin-top:8px">${esc(C.qmemo[it.n]||"")}</textarea>
   </div>`;
 }
@@ -478,6 +579,34 @@ function bindDetail(){
   root.querySelectorAll("[data-cf]").forEach(el=>el.oninput=()=>{ C.lists.corr[+el.dataset.i][el.dataset.cf] = el.value; dirty(); });
   root.querySelectorAll("[data-tr]").forEach(el=>el.oninput=()=>{ C.data.items[+el.dataset.tr].transcript = el.value; C.trEdited = true; dirty(); });
   root.querySelectorAll("[data-qm]").forEach(el=>el.oninput=()=>{ C.qmemo[el.dataset.qm] = el.value; dirty(); });
+  const qfb = n => (C.lists.qfb = C.lists.qfb||{}, C.lists.qfb[n] = C.lists.qfb[n]||{comment:"",better:""});
+  root.querySelectorAll("[data-qc]").forEach(el=>el.oninput=()=>{ qfb(el.dataset.qc).comment = el.value; dirty(); });
+  root.querySelectorAll("[data-qb]").forEach(el=>el.oninput=()=>{ qfb(el.dataset.qb).better = el.value; dirty(); });
+  root.querySelectorAll("[data-cdel]").forEach(b=>b.onclick=()=>{ C.lists.corr.splice(+b.dataset.cdel,1); dirty(); keepScroll(renderDetail); });
+  $("#delCur").onclick = () => deleteSubmission(C.id);
+  // 자주 쓰는 문장
+  root.querySelectorAll("details.ph").forEach(dt=>dt.ontoggle=()=>{ dt.open ? C.openPh.add(dt.dataset.cat) : C.openPh.delete(dt.dataset.cat); });
+  root.querySelectorAll("[data-ph]").forEach(b=>b.onclick=e=>{
+    if(e.target.dataset.phdel) return;
+    const cat = b.dataset.ph, t = b.dataset.t;
+    if(cat==="tense"){ C.lists.tense = (C.lists.tense.on && C.lists.tense.text.trim()===t) ? {text:"",on:false} : {text:t,on:true}; }
+    else { const L = C.lists[cat]; const f = L.find(x=>x.text.trim()===t); if(f) f.on = !f.on; else L.push({text:t,on:true}); }
+    dirty(); keepScroll(renderDetail);
+  });
+  root.querySelectorAll("[data-phdel]").forEach(x=>x.onclick=async e=>{
+    e.stopPropagation();
+    const cat = x.dataset.phdel, t = x.dataset.t;
+    if(!await confirmBox(`'우리 문장'에서 지울까요?\n${t}`)) return;
+    MINE = MINE.filter(m=>!(m.cat===cat && m.text===t)); keepScroll(renderDetail);
+    api({action:"t_phrase_del", cat, text:t}).catch(err=>toast("삭제 실패: "+err.message));
+  });
+  root.querySelectorAll("[data-phsave]").forEach(b=>b.onclick=async()=>{
+    const cat = b.dataset.phsave, inp = root.querySelector(`[data-phnew="${cat}"]`), t = inp.value.trim();
+    if(!t) return;
+    if(MINE.some(m=>m.cat===cat && m.text===t) || PRESETS[cat].includes(t)){ toast("이미 있는 문장이에요"); return; }
+    MINE.unshift({cat, text:t}); C.openPh.add(cat); keepScroll(renderDetail); toast("우리 문장으로 저장했어요");
+    api({action:"t_phrase_add", cat, text:t}).catch(err=>toast("저장 실패: "+err.message));
+  });
   root.querySelectorAll("[data-addc]").forEach(b=>b.onclick=()=>{ C.lists.corr.push({n:+b.dataset.addc,before:"",after:"",why:"",on:true}); dirty(); keepScroll(renderDetail); });
   $("#addS").onclick = () => { C.lists.strengths.push({text:"",on:true}); dirty(); keepScroll(renderDetail); };
   $("#addW").onclick = () => { C.lists.weaknesses.push({text:"",on:true}); dirty(); keepScroll(renderDetail); };
@@ -645,7 +774,7 @@ function confirmBox(msg){
   return new Promise(res=>{
     const bg = document.createElement("div");
     bg.style.cssText = "position:fixed;inset:0;background:rgba(10,20,35,.5);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px";
-    bg.innerHTML = `<div class="card" style="max-width:420px;margin:0"><p style="line-height:1.6;margin:0 0 16px">${esc(msg)}</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn ghost" data-r="0">취소</button><button class="btn" data-r="1">확인</button></div></div>`;
+    bg.innerHTML = `<div class="card" style="max-width:420px;margin:0"><p style="line-height:1.6;margin:0 0 16px;white-space:pre-line">${esc(msg)}</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn ghost" data-r="0">취소</button><button class="btn" data-r="1">확인</button></div></div>`;
     document.body.appendChild(bg);
     bg.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{ bg.remove(); res(b.dataset.r==="1"); });
   });
